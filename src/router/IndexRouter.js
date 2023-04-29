@@ -1,8 +1,8 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Login from '../views/login/Login'
-import Index from '../views/index/Index'
-import BackStage from '../views/backstage/BackStage'
+import Login from '@/views/login/Login'
+import Index from '@/views/index/Index'
+import BackStage from '@/views/backstage/BackStage'
 
 export default function IndexRouter() {
   return (

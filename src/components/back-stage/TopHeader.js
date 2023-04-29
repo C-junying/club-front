@@ -1,23 +1,18 @@
 import { Layout, Dropdown, Avatar } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
+
 const { Header } = Layout
 export default function TopHeader() {
+  const navigate = useNavigate()
   const items = [
     {
       key: '1',
-      label: (
-        <a target="_blank" rel="noopener noreferrer" href="#">
-          超级管理员
-        </a>
-      ),
+      label: '超级管理员',
     },
     {
       key: '2',
-      label: (
-        <a target="_blank" rel="noopener noreferrer" href="#">
-          退出
-        </a>
-      ),
+      label: '退出',
     },
   ]
   return (
@@ -31,6 +26,12 @@ export default function TopHeader() {
         <Dropdown
           menu={{
             items,
+            onClick: ({ key }) => {
+              if (key === '2') {
+                localStorage.removeItem('token')
+                navigate('/login')
+              }
+            },
           }}
           placement="bottom">
           <Avatar size="large" icon={<UserOutlined />} />

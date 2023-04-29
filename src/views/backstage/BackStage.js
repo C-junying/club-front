@@ -1,14 +1,14 @@
 import React from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import Home from './home/Home'
 import UserList from './user-manage/UserList'
 import RoleList from './right-manage/RoleList'
 import MenuList from './right-manage/MenuList'
-// import NoPermission from './nopermission/NoPermission'
+import Error from '@/components/back-stage/Error'
 import { Layout } from 'antd'
-import SideMenu from '../../components/SideMenu'
-import TopHeader from '../../components/TopHeader'
-import BottomFooter from '../../components/BottomFooter'
+import SideMenu from '@/components/back-stage/SideMenu'
+import TopHeader from '@/components/back-stage/TopHeader'
+import BottomFooter from '@/components/back-stage/BottomFooter'
 import './BackStage.css'
 const { Content } = Layout
 export default function BackStage() {
@@ -20,11 +20,12 @@ export default function BackStage() {
         <Content
           style={{
             margin: '24px 16px 0',
+            overflow: 'auto',
           }}>
           <div
             style={{
-              padding: 24,
-              minHeight: 600,
+              padding: 18,
+              minHeight: 560,
               background: 'white',
             }}>
             <Routes>
@@ -32,7 +33,8 @@ export default function BackStage() {
               <Route path="/users/list" element={<UserList />} />
               <Route path="/admin/role" element={<RoleList />} />
               <Route path="/admin/menu" element={<MenuList />} />
-              {/* <Route path="/*" element={<NoPermission />} /> */}
+              <Route path="/" element={<Navigate to="/backstage/home" />} />
+              <Route path="/*" element={<Error />} />
             </Routes>
           </div>
         </Content>
