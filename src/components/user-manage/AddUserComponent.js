@@ -1,4 +1,4 @@
-import React from 'react'
+import { useEffect, useState } from 'react'
 import { Form, Input, Switch, Select, Upload } from 'antd'
 import { MyIcon } from '@/utils/MyIcon'
 import { baseURL } from '@/utils/http'
@@ -9,8 +9,12 @@ export default function AddUserComponent(props) {
   const handleChange = (value) => {
     console.log(`selected ${value}`)
   }
-  const { imageUrl, setImageUrl } = props
-  const { loading, setLoading } = props
+  const [imageUrl, setImageUrl] = useState(props.imageUrl)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    setImageUrl(props.imageUrl)
+  }, [props.imageUrl])
 
   const uploadButton = (
     <div>
@@ -121,7 +125,7 @@ export default function AddUserComponent(props) {
           listType="picture-card"
           className="avatar-uploader"
           showUploadList={false}
-          action={baseURL + 'images/upload'}>
+          action={baseURL + 'images/uploadHead'}>
           {imageUrl ? (
             <img
               src={imageUrl}

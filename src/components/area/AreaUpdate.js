@@ -1,9 +1,7 @@
-import React from 'react'
 import { Form, Input, Select } from 'antd'
 export default function AreaUpdate(props) {
   const form = props.form
   const flag = props.flag
-  console.log(form)
   const handleChange = (value) => {
     console.log(`selected ${value}`)
   }

@@ -13,6 +13,7 @@ import AuthRouter from './AuthRouter'
 import AreaList from '@/views/area/AreaList'
 import ClubList from '@/views/club/club/ClubList'
 import ActivityList from '@/views/activity/activity/ActivityList'
+import ClubTypeList from '@/views/club/club-type/ClubTypeList'
 
 // const LazyLoad = (path) => { //传入在view 下的路径
 //   const Comp = React.lazy(() => import(`../view${path}`))
@@ -70,6 +71,10 @@ export default function IndexRouter() {
         {
           path: 'list',
           element: <ClubList />,
+        },
+        {
+          path: 'club-type/list',
+          element: <ClubTypeList />,
         },
       ],
     },

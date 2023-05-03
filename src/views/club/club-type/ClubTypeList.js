@@ -1,56 +1,48 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Form, Input, Tag } from 'antd'
+import { Button, Modal, Table, Form, Input } from 'antd'
 import { http } from '@/utils/http'
 import { MyIcon } from '@/utils/MyIcon'
 import { toHump } from '@/utils/toHump'
-import { dateFormat } from '@/utils/time'
-import AreaUpdate from '@/components/area/AreaUpdate'
+import ClubTypeComponent from '@/components/club/ClubTypeComponent'
 
 const { confirm } = Modal
 const { Search } = Input
-export default function AreaList() {
+export default function ClubTypeList() {
   // table操作
   const [dataSource, setDataSource] = useState([])
+
+  //   图片地址
+  const [imageUrl, setImageUrl] = useState('')
+  //   const setImageNull = () => {
+  //     setImageUrl('')
+  //   }
   useEffect(() => {
-    http.post('/area/areaAll').then((res) => {
+    http.post('/club/clubTypeAll').then((res) => {
       setDataSource(res.data.data)
     })
   }, [])
   const columns = [
     {
-      title: '场地名称',
-      dataIndex: 'area_name',
-      key: 'area_name',
+      title: '社团类型名称',
+      dataIndex: 'type_name',
+      key: 'type_name',
       render: (key) => {
         return <b>{key}</b>
       },
     },
+
     {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
-      render: (item) => {
-        if (item === 0) {
-          return <Tag color="error">禁用</Tag>
-        } else if (item === 1) {
-          return <Tag color="processing">未使用</Tag>
-        } else {
-          return <Tag color="success">使用中</Tag>
-        }
-      },
+      title: '类型介绍',
+      dataIndex: 'type_content',
+      key: 'type_content',
     },
     {
-      title: '注册时间',
-      dataIndex: 'regist_time',
-      key: 'regist_time',
-      render: (item) => {
-        return dateFormat(item)
+      title: '头像',
+      dataIndex: 'picture',
+      key: 'picture',
+      render: (pic) => {
+        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : ''
       },
-    },
-    {
-      title: '备注',
-      dataIndex: 'remark',
-      key: 'remark',
     },
     {
       title: '操作',
@@ -89,10 +81,10 @@ export default function AreaList() {
   const deleteMothed = (item) => {
     console.log(item)
     // 当前页面同步状态+后端同步
-    setDataSource(dataSource.filter((data) => data['area_id'] !== item['area_id']))
-    http.post('/area/deleteArea', toHump(item))
+    setDataSource(dataSource.filter((data) => data['type_id'] !== item['type_id']))
+    http.post('/club/deleteClubType', toHump(item))
   }
-  // 添加场地弹出框
+  // 添加社团类型弹出框
   const [addOpen, setAddOpen] = useState(false)
   const [addForm] = Form.useForm()
 
@@ -100,7 +92,8 @@ export default function AreaList() {
     addForm
       .validateFields()
       .then((values) => {
-        http.post('/area/addArea', toHump(values)).then((res) => {
+        values.picture = Array.isArray(values.picture) ? values.picture[0].response.data.img : values.picture
+        http.post('/club/addClubType', toHump(values)).then((res) => {
           setAddOpen(false)
           addForm.resetFields()
           alert(res.data.msg)
@@ -111,28 +104,30 @@ export default function AreaList() {
       })
   }
 
-  // 更新场地弹出框
+  // 更新社团类型弹出框
   const [updateOpen, setUpdateOpen] = useState(false)
   const [updateForm] = Form.useForm()
 
-  // 弹出更新场地
+  // 弹出更新社团类型
   const handleUpdate = (item) => {
     setUpdateOpen(true)
+    setImageUrl(item.picture)
+    console.log(imageUrl)
     updateForm.setFieldsValue(item)
-    updateForm.setFieldValue('regist_time', dateFormat(item['regist_time']))
   }
   const updateFormOk = () => {
     updateForm
       .validateFields()
       .then((values) => {
-        http.post('/area/updateArea', toHump(values)).then((res) => {
+        values.picture = !!values.picture ? values.picture[0].response.data.img : null
+        http.post('/club/updateClubType', toHump(values)).then((res) => {
           console.log(res.data)
           setUpdateOpen(false)
           updateForm.resetFields()
           if (res.data.code === 200) {
             setDataSource(
               dataSource.map((item) => {
-                if (item['area_id'] === values['area_id']) {
+                if (item['type_id'] === values['type_id']) {
                   return values
                 }
                 return item
@@ -148,9 +143,9 @@ export default function AreaList() {
   }
   // 模糊查询
   const onSearch = (value) => {
-    let href = '/area/areaSearch'
+    let href = '/club/clubTypeSearch'
     if (value === '') {
-      href = '/area/areaAll'
+      href = '/club/clubTypeAll'
     }
     http.post(href, { search: value }).then((res) => {
       setDataSource(res.data.data)
@@ -160,7 +155,7 @@ export default function AreaList() {
     <div>
       <div id="user_top">
         <Button type="primary" shape="round" onClick={() => setAddOpen(true)}>
-          添加场地
+          添加社团类型
         </Button>
         <Search
           className="user_search"
@@ -174,7 +169,7 @@ export default function AreaList() {
       <Table
         id="table-antn-menu"
         columns={columns}
-        rowKey="area_id"
+        rowKey="type_id"
         pagination={{
           position: ['bottomCenter'],
           showQuickJumper: true,
@@ -188,27 +183,29 @@ export default function AreaList() {
       />
       <Modal
         open={addOpen}
-        title="添加场地"
+        title="添加社团类型"
         okText="添加"
         cancelText="取消"
         onCancel={() => {
           setAddOpen(false)
           addForm.resetFields()
+          setImageUrl('')
         }}
         onOk={() => addFormOk()}>
-        <AreaUpdate form={addForm} flag={true} />
+        <ClubTypeComponent form={addForm} imageUrl={imageUrl} />
       </Modal>
       <Modal
         open={updateOpen}
-        title="更新场地"
+        title="更新社团类型"
         okText="更新"
         cancelText="取消"
         onCancel={() => {
           setUpdateOpen(false)
           updateForm.resetFields()
+          setImageUrl('')
         }}
         onOk={() => updateFormOk()}>
-        <AreaUpdate form={updateForm} flag={false} />
+        <ClubTypeComponent form={updateForm} imageUrl={imageUrl} />
       </Modal>
     </div>
   )

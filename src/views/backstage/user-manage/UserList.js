@@ -13,11 +13,7 @@ export default function UserList() {
   // table
   const [dataSource, setDataSource] = useState([])
   const [imageUrl, setImageUrl] = useState('')
-  const [loading, setLoading] = useState(false)
-  const setImageNull = () => {
-    setImageUrl('')
-    setLoading(false)
-  }
+
   useEffect(() => {
     http.post('/users/queryAll').then((res) => {
       setDataSource(res.data.data)
@@ -247,17 +243,10 @@ export default function UserList() {
         onCancel={() => {
           setOpen(false)
           form.resetFields()
-          setImageNull()
+          setImageUrl('')
         }}
         onOk={() => addFormOk()}>
-        <AddUserComponent
-          form={form}
-          roleList={roleList}
-          imageUrl={imageUrl}
-          setImageUrl={setImageUrl}
-          loading={loading}
-          setLoading={setLoading}
-        />
+        <AddUserComponent form={form} roleList={roleList} imageUrl={imageUrl} />
       </Modal>
       <Modal
         open={updateOpen}
@@ -267,7 +256,7 @@ export default function UserList() {
         onCancel={() => {
           setUpdateOpen(false)
           updateForm.resetFields()
-          setImageNull()
+          setImageUrl('')
         }}
         onOk={() => updateFormOk()}>
         <AddUserComponent
@@ -275,9 +264,6 @@ export default function UserList() {
           roleList={roleList}
           isHiddenPassword={hiddenPassword}
           imageUrl={imageUrl}
-          setImageUrl={setImageUrl}
-          loading={loading}
-          setLoading={setLoading}
         />
       </Modal>
       <Modal
