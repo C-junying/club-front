@@ -10,7 +10,9 @@ import RoleList from '@/views/backstage/right-manage/RoleList'
 import MenuList from '@/views/backstage/right-manage/MenuList'
 import Error from '@/components/back-stage/Error'
 import AuthRouter from './AuthRouter'
-// import Area from '@/views/area/Area'
+import AreaList from '@/views/area/AreaList'
+import ClubList from '@/views/club/club/ClubList'
+import ActivityList from '@/views/activity/activity/ActivityList'
 
 // const LazyLoad = (path) => { //传入在view 下的路径
 //   const Comp = React.lazy(() => import(`../view${path}`))
@@ -30,6 +32,10 @@ export default function IndexRouter() {
     {
       path: '/register',
       element: <Register />,
+    },
+    {
+      path: '/',
+      element: <Index />,
     },
     {
       path: '/backstage',
@@ -58,8 +64,34 @@ export default function IndexRouter() {
       ],
     },
     {
-      path: '/',
-      element: <Index />,
+      path: '/club',
+      element: <AuthRouter element={<BackStage />} />,
+      children: [
+        {
+          path: 'list',
+          element: <ClubList />,
+        },
+      ],
+    },
+    {
+      path: '/activity',
+      element: <AuthRouter element={<BackStage />} />,
+      children: [
+        {
+          path: 'list',
+          element: <ActivityList />,
+        },
+      ],
+    },
+    {
+      path: '/area',
+      element: <AuthRouter element={<BackStage />} />,
+      children: [
+        {
+          path: 'list',
+          element: <AreaList />,
+        },
+      ],
     },
     {
       path: '*',

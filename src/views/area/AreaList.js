@@ -1,36 +1,50 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Form } from 'antd'
+import { Button, Modal, Table, Form, Input, Tag } from 'antd'
 import { http } from '@/utils/http'
 import { MyIcon } from '@/utils/MyIcon'
 import { toHump } from '@/utils/toHump'
-import AddRole from '@/components/right-manage/AddRole'
-import MenuTree from '@/components/right-manage/MenuTree'
+import { dateFormat } from '@/utils/time'
+import AreaUpdate from '@/components/area/AreaUpdate'
 
 const { confirm } = Modal
-
-export default function RoleList() {
+const { Search } = Input
+export default function AreaList() {
   // table操作
   const [dataSource, setDataSource] = useState([])
   useEffect(() => {
-    http.post('/role/roleList').then((res) => {
+    http.post('/area/areaAll').then((res) => {
       setDataSource(res.data.data)
     })
   }, [])
   const columns = [
     {
-      title: '角色名称',
-      dataIndex: 'role_name',
-      key: 'role_name',
+      title: '场地名称',
+      dataIndex: 'area_name',
+      key: 'area_name',
       render: (key) => {
         return <b>{key}</b>
       },
     },
     {
-      title: 'logo',
-      dataIndex: 'role_logo',
-      key: 'role_logo',
-      render: (key) => {
-        return MyIcon(key)
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      render: (item) => {
+        if (item === 0) {
+          return <Tag color="error">禁用</Tag>
+        } else if (item === 1) {
+          return <Tag color="processing">未使用</Tag>
+        } else {
+          return <Tag color="success">使用中</Tag>
+        }
+      },
+    },
+    {
+      title: '注册时间',
+      dataIndex: 'regist_time',
+      key: 'regist_time',
+      render: (item) => {
+        return dateFormat(item)
       },
     },
     {
@@ -50,20 +64,6 @@ export default function RoleList() {
             shape="circle"
             icon={MyIcon('EditOutlined')}
             onClick={() => handleUpdate(item)}
-          />
-          <Button
-            type="primary"
-            shape="circle"
-            icon={MyIcon('UnorderedListOutlined')}
-            onClick={() => {
-              console.log(item)
-              http.post('/menu/roleIdMenu', toHump(item)).then((res) => {
-                setOpen(true)
-                // 树中有哪些被选择
-                setCurrentRights(res.data.data.map((val) => val['menu_id']))
-                setCurrentId(item['role_id'])
-              })
-            }}
           />
         </div>
       ),
@@ -89,32 +89,10 @@ export default function RoleList() {
   const deleteMothed = (item) => {
     console.log(item)
     // 当前页面同步状态+后端同步
-    setDataSource(dataSource.filter((data) => data['role_id'] !== item['role_id']))
-    http.post('/role/deleteRole', toHump(item))
+    setDataSource(dataSource.filter((data) => data['area_id'] !== item['area_id']))
+    http.post('/area/deleteArea', toHump(item))
   }
-  // 权限弹出框操作
-  const [open, setOpen] = useState(false)
-  const [confirmLoading, setConfirmLoading] = useState(false)
-  const [currentRights, setCurrentRights] = useState([])
-  const [currentId, setCurrentId] = useState(0)
-
-  // 权限确认弹出框
-  const handleOk = () => {
-    // 加载
-    setConfirmLoading(true)
-    // 分配权限
-    http.post('/role/shareRolePower', { roleId: currentId, roleMenuIdArr: currentRights }).then((res) => {
-      console.log(res.data)
-      setOpen(false)
-      setConfirmLoading(false)
-      alert(res.data.msg)
-    })
-  }
-  const handleCancel = () => {
-    console.log('Clicked cancel button')
-    setOpen(false)
-  }
-  // 添加角色弹出框
+  // 添加场地弹出框
   const [addOpen, setAddOpen] = useState(false)
   const [addForm] = Form.useForm()
 
@@ -122,8 +100,7 @@ export default function RoleList() {
     addForm
       .validateFields()
       .then((values) => {
-        http.post('/role/addRole', toHump(values)).then((res) => {
-          console.log(res.data)
+        http.post('/area/addArea', toHump(values)).then((res) => {
           setAddOpen(false)
           addForm.resetFields()
           alert(res.data.msg)
@@ -134,31 +111,34 @@ export default function RoleList() {
       })
   }
 
-  // 更新角色弹出框
+  // 更新场地弹出框
   const [updateOpen, setUpdateOpen] = useState(false)
   const [updateForm] = Form.useForm()
 
-  // 弹出更新角色
+  // 弹出更新场地
   const handleUpdate = (item) => {
     setUpdateOpen(true)
     updateForm.setFieldsValue(item)
+    updateForm.setFieldValue('regist_time', dateFormat(item['regist_time']))
   }
   const updateFormOk = () => {
     updateForm
       .validateFields()
       .then((values) => {
-        http.post('/role/updateRole', toHump(values)).then((res) => {
+        http.post('/area/updateArea', toHump(values)).then((res) => {
           console.log(res.data)
           setUpdateOpen(false)
           updateForm.resetFields()
-          setDataSource(
-            dataSource.map((item) => {
-              if (item['role_id'] === values['role_id']) {
-                return values
-              }
-              return item
-            })
-          )
+          if (res.data.code === 200) {
+            setDataSource(
+              dataSource.map((item) => {
+                if (item['area_id'] === values['area_id']) {
+                  return values
+                }
+                return item
+              })
+            )
+          }
           alert(res.data.msg)
         })
       })
@@ -166,15 +146,35 @@ export default function RoleList() {
         console.log('Validate Failed:', info)
       })
   }
+  // 模糊查询
+  const onSearch = (value) => {
+    let href = '/area/areaSearch'
+    if (value === '') {
+      href = '/area/areaAll'
+    }
+    http.post(href, { search: value }).then((res) => {
+      setDataSource(res.data.data)
+    })
+  }
   return (
     <div>
-      <Button type="primary" shape="round" onClick={() => setAddOpen(true)}>
-        添加角色
-      </Button>
+      <div id="user_top">
+        <Button type="primary" shape="round" onClick={() => setAddOpen(true)}>
+          添加场地
+        </Button>
+        <Search
+          className="user_search"
+          placeholder="名称 备注"
+          allowClear
+          enterButton="Search"
+          size="large"
+          onSearch={onSearch}
+        />
+      </div>
       <Table
         id="table-antn-menu"
         columns={columns}
-        rowKey="role_id"
+        rowKey="area_id"
         pagination={{
           position: ['bottomCenter'],
           showQuickJumper: true,
@@ -182,6 +182,7 @@ export default function RoleList() {
           showSizeChanger: true,
           defaultPageSize: 5,
           total: dataSource.length,
+          showTotal: (total) => `总共：${total}个`,
         }}
         dataSource={dataSource}
       />
@@ -195,7 +196,7 @@ export default function RoleList() {
           addForm.resetFields()
         }}
         onOk={() => addFormOk()}>
-        <AddRole form={addForm} />
+        <AreaUpdate form={addForm} flag={true} />
       </Modal>
       <Modal
         open={updateOpen}
@@ -207,17 +208,7 @@ export default function RoleList() {
           updateForm.resetFields()
         }}
         onOk={() => updateFormOk()}>
-        <AddRole form={updateForm} />
-      </Modal>
-      <Modal
-        title="权限分配"
-        okText="分配权限"
-        cancelText="取消"
-        open={open}
-        onOk={handleOk}
-        confirmLoading={confirmLoading}
-        onCancel={handleCancel}>
-        <MenuTree currentRights={currentRights} setCurrentRights={setCurrentRights} selectBoolean={true} />
+        <AreaUpdate form={updateForm} flag={false} />
       </Modal>
     </div>
   )

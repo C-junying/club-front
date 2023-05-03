@@ -155,20 +155,21 @@ export default function UserList() {
       .validateFields()
       .then((values) => {
         values.sex = !!values.sex ? '男' : '女'
-        values.picture = !!values.picture[0] ? values.picture[0].response.data.img : null
+        values.picture = !!values.picture ? values.picture[0].response.data.img : null
         values['regist_time'] = new Date(values['regist_time'])
         http.post('/users/update', toHump(values)).then((res) => {
           console.log(res.data)
           setUpdateOpen(false)
           updateForm.resetFields()
-          setDataSource(
-            dataSource.map((item) => {
-              if (item['user_id'] === values['user_id']) {
-                return values
-              }
-              return item
-            })
-          )
+          if (res.data.data === 200)
+            setDataSource(
+              dataSource.map((item) => {
+                if (item['user_id'] === values['user_id']) {
+                  return values
+                }
+                return item
+              })
+            )
           alert(res.data.msg)
         })
       })
@@ -215,6 +216,7 @@ export default function UserList() {
           showSizeChanger: true,
           defaultPageSize: 5,
           total: dataSource.length,
+          showTotal: (total) => `总共：${total}个`,
         }}
         expandable={{
           expandedRowRender: (user) => (

@@ -111,6 +111,7 @@ export default function MenuList() {
           console.log(res.data)
           setOpen(false)
           form.resetFields()
+          alert(res.data.msg)
         })
       })
       .catch((info) => {
@@ -144,6 +145,7 @@ export default function MenuList() {
               return item
             })
           )
+          alert(res.data.msg)
         })
       })
       .catch((info) => {
@@ -163,11 +165,12 @@ export default function MenuList() {
     }
     // 加载
     setConfirmLoading(true)
-    // 分配权限
+    // 上级菜单
     http.post('/menu/updateMenu', toHump({ ...currentMenu, parent_id: currentRights[0] })).then((res) => {
       console.log(res.data)
       setParentOpen(false)
       setConfirmLoading(false)
+      alert(res.data.msg)
     })
   }
   return (
