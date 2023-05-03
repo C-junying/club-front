@@ -1,13 +1,14 @@
 import { Form, Input, Button } from 'antd'
 import { MyIcon } from '@/utils/MyIcon'
 import { http } from '@/utils/http'
+import { toHump } from '@/utils/toHump'
 import { useNavigate } from 'react-router-dom'
 
 export function LoginComponent(props) {
   const navigate = useNavigate()
   const onFinish = (values) => {
     console.log('Success:', values)
-    http.post('/users/login', values).then((res) => {
+    http.post('/users/login', toHump(values)).then((res) => {
       console.log(res.data)
       if (res.data.code === 200) {
         localStorage.setItem('token', res.data.data)
@@ -49,7 +50,7 @@ export function LoginComponent(props) {
         <Button type="primary" htmlType="submit" size="large" block className="login-form-button">
           登录
         </Button>
-        Or <a href="#123">register now!</a>
+        或 <a href="/register">注册!</a>
       </Form.Item>
     </Form>
   )

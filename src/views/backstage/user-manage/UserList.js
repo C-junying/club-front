@@ -4,7 +4,7 @@ import { http } from '@/utils/http'
 import { MyIcon } from '@/utils/MyIcon'
 import { toHump } from '@/utils/toHump'
 import { dateFormat } from '@/utils/time'
-import AddUser from '@/components/user-manage/AddUser'
+import AddUserComponent from '@/components/user-manage/AddUserComponent'
 import UpdatePassword from '@/components/user-manage/UpdatePassword'
 
 const { confirm } = Modal
@@ -126,11 +126,12 @@ export default function UserList() {
       .validateFields()
       .then((values) => {
         values.sex = !!values.sex ? '男' : '女'
-        values.picture = values.picture[0].response.data.img
+        values.picture = Array.isArray(values.picture) ? values.picture[0].response.data.img : values.picture
         http.post('/users/register', toHump(values)).then((res) => {
           console.log(res.data)
           setOpen(false)
           form.resetFields()
+          alert(res.data.msg)
         })
       })
       .catch((info) => {
@@ -145,6 +146,7 @@ export default function UserList() {
   // 弹出更新用户
   const handleUpdate = (item) => {
     setUpdateOpen(true)
+    setImageUrl(item.picture)
     updateForm.setFieldsValue(item)
     item.sex === '男' ? updateForm.setFieldValue('sex', true) : updateForm.setFieldValue('sex', false)
   }
@@ -153,7 +155,7 @@ export default function UserList() {
       .validateFields()
       .then((values) => {
         values.sex = !!values.sex ? '男' : '女'
-        values.picture = values.picture[0].response.data.img
+        values.picture = !!values.picture[0] ? values.picture[0].response.data.img : null
         values['regist_time'] = new Date(values['regist_time'])
         http.post('/users/update', toHump(values)).then((res) => {
           console.log(res.data)
@@ -167,6 +169,7 @@ export default function UserList() {
               return item
             })
           )
+          alert(res.data.msg)
         })
       })
       .catch((info) => {
@@ -236,7 +239,7 @@ export default function UserList() {
 
       <Modal
         open={open}
-        title="添加用户"
+        title="注册用户"
         okText="添加"
         cancelText="取消"
         onCancel={() => {
@@ -245,7 +248,7 @@ export default function UserList() {
           setImageNull()
         }}
         onOk={() => addFormOk()}>
-        <AddUser
+        <AddUserComponent
           form={form}
           roleList={roleList}
           imageUrl={imageUrl}
@@ -265,7 +268,7 @@ export default function UserList() {
           setImageNull()
         }}
         onOk={() => updateFormOk()}>
-        <AddUser
+        <AddUserComponent
           form={updateForm}
           roleList={roleList}
           isHiddenPassword={hiddenPassword}

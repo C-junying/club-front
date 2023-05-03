@@ -21,13 +21,16 @@ export default function MenuTree(props) {
     })
   }, [selectBoolean])
   return (
-    <Tree
-      checkable
-      checkStrictly
-      fieldNames={{ title: 'name', key: 'menu_id', children: 'menus' }}
-      checkedKeys={currentRights}
-      onCheck={onCheck}
-      treeData={rightList}
-    />
+    rightList.length > 0 && (
+      <Tree
+        checkable
+        checkStrictly
+        defaultExpandAll
+        fieldNames={{ title: 'name', key: 'menu_id', children: 'menus' }}
+        checkedKeys={currentRights}
+        onCheck={onCheck}
+        treeData={rightList}
+      />
+    )
   )
 }

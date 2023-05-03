@@ -3,7 +3,7 @@ import { Form, Input, Switch, Select, Upload } from 'antd'
 import { MyIcon } from '@/utils/MyIcon'
 import { baseURL } from '@/utils/http'
 
-export default function AddUser(props) {
+export default function AddUserComponent(props) {
   const form = props.form
   const roleList = props.roleList
   const handleChange = (value) => {
@@ -121,7 +121,7 @@ export default function AddUser(props) {
           listType="picture-card"
           className="avatar-uploader"
           showUploadList={false}
-          action={baseURL + 'image/upload'}>
+          action={baseURL + 'images/upload'}>
           {imageUrl ? (
             <img
               src={imageUrl}

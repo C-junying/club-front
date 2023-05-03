@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table } from 'antd'
+import { Button, Modal, Table, Form } from 'antd'
 import { http } from '@/utils/http'
 import { MyIcon } from '@/utils/MyIcon'
 import { toHump } from '@/utils/toHump'
+import AddRole from '@/components/right-manage/AddRole'
 import MenuTree from '@/components/right-manage/MenuTree'
 
 const { confirm } = Modal
@@ -44,7 +45,12 @@ export default function RoleList() {
       render: (item) => (
         <div>
           <Button danger shape="circle" icon={MyIcon('DeleteOutlined')} onClick={() => confirmMethod(item)} />
-          <Button type="primary" shape="circle" icon={MyIcon('EditOutlined')} />
+          <Button
+            type="primary"
+            shape="circle"
+            icon={MyIcon('EditOutlined')}
+            onClick={() => handleUpdate(item)}
+          />
           <Button
             type="primary"
             shape="circle"
@@ -86,13 +92,13 @@ export default function RoleList() {
     setDataSource(dataSource.filter((data) => data['role_id'] !== item['role_id']))
     http.post('/role/deleteRole', toHump(item))
   }
-  // 弹出框操作
+  // 权限弹出框操作
   const [open, setOpen] = useState(false)
   const [confirmLoading, setConfirmLoading] = useState(false)
   const [currentRights, setCurrentRights] = useState([])
   const [currentId, setCurrentId] = useState(0)
 
-  // 确认弹出框
+  // 权限确认弹出框
   const handleOk = () => {
     // 加载
     setConfirmLoading(true)
@@ -107,8 +113,61 @@ export default function RoleList() {
     console.log('Clicked cancel button')
     setOpen(false)
   }
+  // 添加角色弹出框
+  const [addOpen, setAddOpen] = useState(false)
+  const [addForm] = Form.useForm()
+
+  const addFormOk = () => {
+    addForm
+      .validateFields()
+      .then((values) => {
+        http.post('/role/addRole', toHump(values)).then((res) => {
+          console.log(res.data)
+          setAddOpen(false)
+          addForm.resetFields()
+        })
+      })
+      .catch((info) => {
+        console.log('Validate Failed:', info)
+      })
+  }
+
+  // 更新角色弹出框
+  const [updateOpen, setUpdateOpen] = useState(false)
+  const [updateForm] = Form.useForm()
+
+  // 弹出更新角色
+  const handleUpdate = (item) => {
+    setUpdateOpen(true)
+    updateForm.setFieldsValue(item)
+  }
+  const updateFormOk = () => {
+    updateForm
+      .validateFields()
+      .then((values) => {
+        http.post('/role/updateRole', toHump(values)).then((res) => {
+          console.log(res.data)
+          setUpdateOpen(false)
+          updateForm.resetFields()
+          setDataSource(
+            dataSource.map((item) => {
+              if (item['role_id'] === values['role_id']) {
+                return values
+              }
+              return item
+            })
+          )
+        })
+      })
+      .catch((info) => {
+        console.log('Validate Failed:', info)
+      })
+  }
   return (
     <div>
+      <Button type="primary" shape="round" onClick={() => setAddOpen(true)}>
+        添加角色
+      </Button>
       <Table
         id="table-antn-menu"
         columns={columns}
@@ -124,7 +183,33 @@ export default function RoleList() {
         dataSource={dataSource}
       />
       <Modal
+        open={addOpen}
+        title="添加角色"
+        okText="添加"
+        cancelText="取消"
+        onCancel={() => {
+          setAddOpen(false)
+          addForm.resetFields()
+        }}
+        onOk={() => addFormOk()}>
+        <AddRole form={addForm} />
+      </Modal>
+      <Modal
+        open={updateOpen}
+        title="更新角色"
+        okText="更新"
+        cancelText="取消"
+        onCancel={() => {
+          setUpdateOpen(false)
+          updateForm.resetFields()
+        }}
+        onOk={() => updateFormOk()}>
+        <AddRole form={updateForm} />
+      </Modal>
+      <Modal
         title="权限分配"
+        okText="分配权限"
+        cancelText="取消"
         open={open}
         onOk={handleOk}
         confirmLoading={confirmLoading}

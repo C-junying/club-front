@@ -31,6 +31,9 @@ export default function AddMenu(props) {
         ]}>
         <Input placeholder="请输入菜单路径" />
       </Form.Item>
+      <Form.Item name="parent_id" label="上级菜单" hidden>
+        <Input />
+      </Form.Item>
       <Form.Item
         name="sort"
         label="菜单排序"

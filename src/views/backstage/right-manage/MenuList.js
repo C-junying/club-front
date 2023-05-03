@@ -204,7 +204,7 @@ export default function MenuList() {
       </Modal>
       <Modal
         open={updateOpen}
-        title="更新用户"
+        title="更新菜单"
         okText="更新"
         cancelText="取消"
         onCancel={() => {
