@@ -10,7 +10,7 @@ const getToken = () => {
 // 创建一个高阶组件，高阶组件就是 把一个组件当做另一个组件的参数传入 然后通过判断 返回新的组件
 // 下面的 AuthRouter 就是一个高阶组件
 
-export default function AuthRouter({ element: Component }) {
+export default function AuthRouter({ element: Component, ...reset }) {
   // 获取token
   const token = getToken()
   // 判断token是否存在 存在直接渲染主页面

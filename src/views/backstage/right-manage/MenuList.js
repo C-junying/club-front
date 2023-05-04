@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Tag, Form } from 'antd'
+import { Button, Modal, Table, Tag, Form, message } from 'antd'
 import { http } from '@/utils/http'
 import { MyIcon } from '@/utils/MyIcon'
 import { toHump } from '@/utils/toHump'
@@ -9,6 +9,8 @@ import MenuTree from '@/components/right-manage/MenuTree'
 
 const { confirm } = Modal
 export default function MenuList() {
+  // 通知
+  const [messageApi, contextHolder] = message.useMessage()
   const [dataSource, setDataSource] = useState([])
   useEffect(() => {
     http.post('/menu/roleSelect').then((res) => {
@@ -111,7 +113,11 @@ export default function MenuList() {
           console.log(res.data)
           setOpen(false)
           form.resetFields()
-          alert(res.data.msg)
+          if (res.data.code === 200) {
+            messageApi.success(res.data.msg)
+          } else {
+            messageApi.error(res.data.msg)
+          }
         })
       })
       .catch((info) => {
@@ -137,15 +143,20 @@ export default function MenuList() {
           console.log(res.data)
           setUpdateOpen(false)
           updateForm.resetFields()
-          setDataSource(
-            dataSource.map((item) => {
-              if (item['menu_id'] === values['menu_id']) {
-                return values
-              }
-              return item
-            })
-          )
-          alert(res.data.msg)
+          if (res.data.code === 200) {
+            setDataSource(
+              dataSource.map((item) => {
+                if (item['menu_id'] === values['menu_id']) {
+                  return values
+                }
+                return item
+              })
+            )
+
+            messageApi.success(res.data.msg)
+          } else {
+            messageApi.error(res.data.msg)
+          }
         })
       })
       .catch((info) => {
@@ -160,7 +171,7 @@ export default function MenuList() {
 
   const parentHandleOk = () => {
     if (currentRights[0] === currentMenu['menu_id']) {
-      alert('不能选择菜单自己')
+      messageApi.error('不能选择菜单自己')
       return
     }
     // 加载
@@ -170,11 +181,16 @@ export default function MenuList() {
       console.log(res.data)
       setParentOpen(false)
       setConfirmLoading(false)
-      alert(res.data.msg)
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg)
+      } else {
+        messageApi.error(res.data.msg)
+      }
     })
   }
   return (
     <div>
+      {contextHolder}
       <Button type="primary" shape="round" onClick={() => setOpen(true)}>
         添加菜单
       </Button>

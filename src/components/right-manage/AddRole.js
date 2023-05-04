@@ -11,13 +11,14 @@ export default function AddRole(props) {
         name="role_name"
         label="角色名称"
         rules={[
+          { type: 'string', max: 20, message: '角色名称最多20个字符', validateTrigger: 'onBlur' },
           {
             required: true,
             message: '请输入角色名称!',
             validateTrigger: 'onBlur',
           },
         ]}>
-        <Input placeholder="请输入角色名称" />
+        <Input placeholder="请输入角色名称" maxLength={21} />
       </Form.Item>
       <Form.Item name="role_logo" label="logo">
         <Input placeholder="请输入角色logo" />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Form } from 'antd'
+import { Button, Modal, Table, Form, message } from 'antd'
 import { http } from '@/utils/http'
 import { MyIcon } from '@/utils/MyIcon'
 import { toHump } from '@/utils/toHump'
@@ -9,6 +9,8 @@ import MenuTree from '@/components/right-manage/MenuTree'
 const { confirm } = Modal
 
 export default function RoleList() {
+  // 通知
+  const [messageApi, contextHolder] = message.useMessage()
   // table操作
   const [dataSource, setDataSource] = useState([])
   useEffect(() => {
@@ -107,7 +109,11 @@ export default function RoleList() {
       console.log(res.data)
       setOpen(false)
       setConfirmLoading(false)
-      alert(res.data.msg)
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg)
+      } else {
+        messageApi.error(res.data.msg)
+      }
     })
   }
   const handleCancel = () => {
@@ -126,7 +132,11 @@ export default function RoleList() {
           console.log(res.data)
           setAddOpen(false)
           addForm.resetFields()
-          alert(res.data.msg)
+          if (res.data.code === 200) {
+            messageApi.success(res.data.msg)
+          } else {
+            messageApi.error(res.data.msg)
+          }
         })
       })
       .catch((info) => {
@@ -151,15 +161,20 @@ export default function RoleList() {
           console.log(res.data)
           setUpdateOpen(false)
           updateForm.resetFields()
-          setDataSource(
-            dataSource.map((item) => {
-              if (item['role_id'] === values['role_id']) {
-                return values
-              }
-              return item
-            })
-          )
-          alert(res.data.msg)
+          if (res.data.code === 200) {
+            setDataSource(
+              dataSource.map((item) => {
+                if (item['role_id'] === values['role_id']) {
+                  return values
+                }
+                return item
+              })
+            )
+
+            messageApi.success(res.data.msg)
+          } else {
+            messageApi.error(res.data.msg)
+          }
         })
       })
       .catch((info) => {
@@ -168,6 +183,7 @@ export default function RoleList() {
   }
   return (
     <div>
+      {contextHolder}
       <Button type="primary" shape="round" onClick={() => setAddOpen(true)}>
         添加角色
       </Button>

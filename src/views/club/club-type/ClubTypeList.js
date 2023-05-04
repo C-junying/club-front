@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Form, Input } from 'antd'
+import { Button, Modal, Table, Form, Input, message } from 'antd'
 import { http } from '@/utils/http'
 import { MyIcon } from '@/utils/MyIcon'
 import { toHump } from '@/utils/toHump'
@@ -8,6 +8,8 @@ import ClubTypeComponent from '@/components/club/ClubTypeComponent'
 const { confirm } = Modal
 const { Search } = Input
 export default function ClubTypeList() {
+  // 通知
+  const [messageApi, contextHolder] = message.useMessage()
   // table操作
   const [dataSource, setDataSource] = useState([])
 
@@ -92,11 +94,14 @@ export default function ClubTypeList() {
     addForm
       .validateFields()
       .then((values) => {
-        values.picture = Array.isArray(values.picture) ? values.picture[0].response.data.img : values.picture
         http.post('/club/addClubType', toHump(values)).then((res) => {
           setAddOpen(false)
           addForm.resetFields()
-          alert(res.data.msg)
+          if (res.data.code === 200) {
+            messageApi.success(res.data.msg)
+          } else {
+            messageApi.error(res.data.msg)
+          }
         })
       })
       .catch((info) => {
@@ -119,7 +124,6 @@ export default function ClubTypeList() {
     updateForm
       .validateFields()
       .then((values) => {
-        values.picture = !!values.picture ? values.picture[0].response.data.img : null
         http.post('/club/updateClubType', toHump(values)).then((res) => {
           console.log(res.data)
           setUpdateOpen(false)
@@ -133,8 +137,10 @@ export default function ClubTypeList() {
                 return item
               })
             )
+            messageApi.success(res.data.msg)
+          } else {
+            messageApi.error(res.data.msg)
           }
-          alert(res.data.msg)
         })
       })
       .catch((info) => {
@@ -153,6 +159,7 @@ export default function ClubTypeList() {
   }
   return (
     <div>
+      {contextHolder}
       <div id="user_top">
         <Button type="primary" shape="round" onClick={() => setAddOpen(true)}>
           添加社团类型

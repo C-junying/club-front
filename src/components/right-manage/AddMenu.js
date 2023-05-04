@@ -11,13 +11,14 @@ export default function AddMenu(props) {
         name="name"
         label="菜单名"
         rules={[
+          { type: 'string', max: 20, message: '菜单名最多20个字符', validateTrigger: 'onBlur' },
           {
             required: true,
             message: '请输入菜单名!',
             validateTrigger: 'onBlur',
           },
         ]}>
-        <Input placeholder="请输入菜单名" />
+        <Input placeholder="请输入菜单名" maxLength={21} />
       </Form.Item>
       <Form.Item
         name="href"

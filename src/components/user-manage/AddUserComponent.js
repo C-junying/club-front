@@ -33,12 +33,13 @@ export default function AddUserComponent(props) {
     }
     if (info.file.status === 'uploading') {
       setLoading(true)
-      console.log('status', info)
     }
     if (info.file.status === 'done') {
       setLoading(false)
-      console.log('done', info)
       setImageUrl(info.file.response.data.img)
+      form.validateFields().then((values) => {
+        form.setFieldsValue({ ...values, picture: info.file.response.data.img })
+      })
     }
     return info && info.fileList
   }
@@ -51,25 +52,27 @@ export default function AddUserComponent(props) {
         name="nickname"
         label="昵称"
         rules={[
+          { type: 'string', max: 20, message: '昵称最多20个字符', validateTrigger: 'onBlur' },
           {
             required: true,
             message: '请输入昵称!',
             validateTrigger: 'onBlur',
           },
         ]}>
-        <Input placeholder="请输入昵称" />
+        <Input placeholder="请输入昵称" maxLength={21} />
       </Form.Item>
       <Form.Item
         name="user_name"
         label="姓名"
         rules={[
+          { type: 'string', max: 20, message: '姓名最多20个字符', validateTrigger: 'onBlur' },
           {
             required: true,
             message: '请输入姓名!',
             validateTrigger: 'onBlur',
           },
         ]}>
-        <Input placeholder="请输入姓名" />
+        <Input placeholder="请输入姓名" maxLength={21} />
       </Form.Item>
       <Form.Item
         name="password"
@@ -121,7 +124,7 @@ export default function AddUserComponent(props) {
         noStyle>
         <Upload
           name="file"
-          accept=".png,.jpeg,.gif,.tif,.tga,.bmp,.dds,.svg,.eps,.jpg"
+          accept="image/png,image/jpeg,image/gif,image/tif,image/tga,image/bmp,image/dds,image/svg,image/eps,image/jpg"
           listType="picture-card"
           className="avatar-uploader"
           showUploadList={false}

@@ -1,0 +1,27 @@
+.header-title {
+    display        : flex;
+    justify-content: flex-start;
+    padding        : 20px;
+}
+
+.header-title .title {
+    font-weight : 800;
+    font-size   : 1.5rem;
+    margin-right: 1rem;
+}
+
+.header-title .sub-title {
+    font-weight: 500;
+    font-size  : 1rem;
+    line-height: 1.7rem;
+    color      : #888B8B;
+}
+
+.my-editor {
+    border: 1px solid #d9d9d9;
+}
+
+.toolbar {
+    min-height: 200px;
+    min-width : 400px;
+}

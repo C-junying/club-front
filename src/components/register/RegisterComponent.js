@@ -1,20 +1,29 @@
-import { Form, Input, Switch } from 'antd'
+import { Form, Input, Switch, message } from 'antd'
 import { http } from '@/utils/http'
 import { toHump } from '@/utils/toHump'
 import { useNavigate } from 'react-router-dom'
 export default function RegisterComponent(props) {
+  // 通知
+  const [messageApi, contextHolder] = message.useMessage()
   const navigate = useNavigate()
   const onFinish = (values) => {
     values.sex = !!values.sex ? '男' : '女'
     console.log(values)
     http.post('/users/register', toHump(values)).then((res) => {
       console.log(res.data)
-      alert(res.data.msg)
-      if (res.data.code === 200) navigate('/login')
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg)
+        setTimeout(() => {
+          navigate('/login')
+        }, 1000)
+      } else {
+        messageApi.error(res.data.msg)
+      }
     })
   }
   return (
     <Form layout="vertical" name="form_in_modal" validateTrigger={['onBlur', 'onChange']} onFinish={onFinish}>
+      {contextHolder}
       <Form.Item name="user_id" label="用户编号" hidden>
         <Input />
       </Form.Item>

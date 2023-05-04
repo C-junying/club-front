@@ -1,20 +1,26 @@
-import { Form, Input, Button } from 'antd'
+import { Form, Input, Button, message } from 'antd'
 import { MyIcon } from '@/utils/MyIcon'
 import { http } from '@/utils/http'
 import { toHump } from '@/utils/toHump'
 import { useNavigate } from 'react-router-dom'
 
 export function LoginComponent(props) {
+  // 通知
+  const [messageApi, contextHolder] = message.useMessage()
   const navigate = useNavigate()
   const onFinish = (values) => {
     console.log('Success:', values)
     http.post('/users/login', toHump(values)).then((res) => {
       console.log(res.data)
       if (res.data.code === 200) {
-        localStorage.setItem('token', res.data.data)
-        navigate('/')
+        messageApi.success(res.data.msg)
+        setTimeout(() => {
+          localStorage.setItem('token', res.data.data)
+          navigate('/')
+        }, 1000)
+      } else {
+        messageApi.error(res.data.msg)
       }
-      alert(res.data.msg)
     })
   }
 
@@ -28,6 +34,7 @@ export function LoginComponent(props) {
       }}
       onFinish={onFinish}>
       {props.lable}
+      {contextHolder}
       <Form.Item
         name="password"
         rules={[

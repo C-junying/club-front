@@ -3,9 +3,10 @@ import { MyIcon } from '@/utils/MyIcon'
 import { baseURL } from '@/utils/http'
 import { useEffect, useState } from 'react'
 
-export default function ClubTypeComponent(props) {
+export default function ActivityTypeComponent(props) {
   const form = props.form
 
+  // 显示图片地址
   const [imageUrl, setImageUrl] = useState(props.imageUrl)
   const [loading, setLoading] = useState(false)
 

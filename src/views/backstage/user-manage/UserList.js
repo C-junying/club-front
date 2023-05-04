@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Form, Input } from 'antd'
+import { Button, Modal, Table, Form, Input, message } from 'antd'
 import { http } from '@/utils/http'
 import { MyIcon } from '@/utils/MyIcon'
 import { toHump } from '@/utils/toHump'
@@ -10,6 +10,8 @@ import UpdatePassword from '@/components/user-manage/UpdatePassword'
 const { confirm } = Modal
 const { Search } = Input
 export default function UserList() {
+  // 通知
+  const [messageApi, contextHolder] = message.useMessage()
   // table
   const [dataSource, setDataSource] = useState([])
   const [imageUrl, setImageUrl] = useState('')
@@ -122,12 +124,15 @@ export default function UserList() {
       .validateFields()
       .then((values) => {
         values.sex = !!values.sex ? '男' : '女'
-        values.picture = Array.isArray(values.picture) ? values.picture[0].response.data.img : values.picture
         http.post('/users/register', toHump(values)).then((res) => {
           console.log(res.data)
           setOpen(false)
           form.resetFields()
-          alert(res.data.msg)
+          if (res.data.code === 200) {
+            messageApi.success(res.data.msg)
+          } else {
+            messageApi.error(res.data.msg)
+          }
         })
       })
       .catch((info) => {
@@ -151,13 +156,12 @@ export default function UserList() {
       .validateFields()
       .then((values) => {
         values.sex = !!values.sex ? '男' : '女'
-        values.picture = !!values.picture ? values.picture[0].response.data.img : null
         values['regist_time'] = new Date(values['regist_time'])
         http.post('/users/update', toHump(values)).then((res) => {
           console.log(res.data)
           setUpdateOpen(false)
           updateForm.resetFields()
-          if (res.data.data === 200)
+          if (res.data.data === 200) {
             setDataSource(
               dataSource.map((item) => {
                 if (item['user_id'] === values['user_id']) {
@@ -166,7 +170,10 @@ export default function UserList() {
                 return item
               })
             )
-          alert(res.data.msg)
+            messageApi.success(res.data.msg)
+          } else {
+            messageApi.error(res.data.msg)
+          }
         })
       })
       .catch((info) => {
@@ -188,6 +195,7 @@ export default function UserList() {
   }
   return (
     <div>
+      {contextHolder}
       <div id="user_top">
         <Button type="primary" shape="round" onClick={() => setOpen(true)}>
           添加用户
@@ -284,7 +292,7 @@ export default function UserList() {
                 setPasswordOpen(false)
                 passwordForm.resetFields()
                 setTimeout(() => {
-                  alert(res.data.msg)
+                  messageApi.success(res.data.msg)
                 }, 1000)
               })
             })

@@ -28,13 +28,14 @@ export default function AreaUpdate(props) {
         name="area_name"
         label="场地名称"
         rules={[
+          { type: 'string', max: 20, message: '场地名称最多20个字符', validateTrigger: 'onBlur' },
           {
             required: true,
             message: '请输入场地名称!',
             validateTrigger: 'onBlur',
           },
         ]}>
-        <Input placeholder="请输入场地名称" />
+        <Input placeholder="请输入场地名称" maxLength={21} />
       </Form.Item>
       <Form.Item name="status" label="状态" initialValue={0}>
         <Select
