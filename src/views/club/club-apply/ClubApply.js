@@ -1,9 +1,12 @@
 import React, { useState } from 'react'
-import { Steps, Button, Form } from 'antd'
+import { Steps, Button, Form, message, notification } from 'antd'
 import HeanderTitle from '@/components/other/HeanderTitle'
 import '../../index.css'
 import ApplyComponent from '@/components/other/ApplyComponent'
-import ClubApplyComponent from '../../../components/club/ClubApplyComponent'
+import ClubApplyComponent from '@/components/club/ClubApplyComponent'
+import { http } from '@/utils/http'
+import { toHump } from '@/utils/toHump'
+import { useNavigate } from 'react-router-dom'
 
 const items = [
   {
@@ -20,6 +23,10 @@ const items = [
   },
 ]
 export default function ClubApply() {
+  // 跳转
+  const navigate = useNavigate()
+  // 通知
+  const [messageApi, contextHolder] = message.useMessage()
   // 控制下一步，上一步
   const [current, setCurrent] = useState(0)
   const [applyForm] = Form.useForm()
@@ -27,13 +34,12 @@ export default function ClubApply() {
   const [applyInfo, setApplyInfo] = useState({})
   const [clubContentForm] = Form.useForm()
   // 社团信息
-  const [clubContent, setClubContent] = useState({})
+  const [clubInfor, setClubInfor] = useState({})
   const handleNext = () => {
     if (current === 0) {
       applyForm
         .validateFields()
         .then((res) => {
-          console.log(res)
           setApplyInfo(res)
           setCurrent(current + 1)
         })
@@ -44,9 +50,12 @@ export default function ClubApply() {
       clubContentForm
         .validateFields()
         .then((res) => {
-          console.log(res)
-          setClubContent(res)
-          setCurrent(current + 1)
+          if (!!res.picture) {
+            setClubInfor(res)
+            setCurrent(current + 1)
+          } else {
+            messageApi.error('社团背景图没上传')
+          }
         })
         .catch((error) => {
           console.log(error)
@@ -57,12 +66,22 @@ export default function ClubApply() {
   const handlePrevious = () => {
     setCurrent(current - 1)
   }
-  // 保存
+  // 提交
   const handleSave = (auditState) => {
-    console.log(auditState)
+    applyInfo['apply_state'] = auditState
+    http.post('/club/addApplyClub', toHump({ applyInfo, clubInfor })).then((res) => {
+      if (res.data.code === 200) messageApi.success(res.data.msg)
+      else messageApi.error(res.data.msg)
+      navigate('list')
+      notification.info({
+        message: `通知`,
+        description: `您可以到审核列表中查看您的申请记录`,
+      })
+    })
   }
   return (
     <div>
+      {contextHolder}
       <HeanderTitle title="申请社团" />
       <Steps current={current} items={items} />
       <div style={{ marginTop: '50px' }}>
@@ -77,10 +96,7 @@ export default function ClubApply() {
       <div style={{ marginTop: '50px', textAlign: 'center' }}>
         {current === 2 && (
           <span>
-            <Button type="primary" onClick={() => handleSave(0)}>
-              保存申请
-            </Button>
-            <Button danger onClick={() => handleSave(1)}>
+            <Button danger onClick={() => handleSave(0)}>
               提交审核
             </Button>
           </span>

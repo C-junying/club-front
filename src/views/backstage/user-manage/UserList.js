@@ -130,6 +130,9 @@ export default function UserList() {
           form.resetFields()
           if (res.data.code === 200) {
             messageApi.success(res.data.msg)
+            setTimeout(() => {
+              window.location.reload()
+            }, 1000)
           } else {
             messageApi.error(res.data.msg)
           }
@@ -161,7 +164,7 @@ export default function UserList() {
           console.log(res.data)
           setUpdateOpen(false)
           updateForm.resetFields()
-          if (res.data.data === 200) {
+          if (res.data.code === 200) {
             setDataSource(
               dataSource.map((item) => {
                 if (item['user_id'] === values['user_id']) {

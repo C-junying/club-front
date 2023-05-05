@@ -15,9 +15,6 @@ export default function ActivityTypeList() {
 
   //   图片地址
   const [imageUrl, setImageUrl] = useState('')
-  //   const setImageNull = () => {
-  //     setImageUrl('')
-  //   }
   useEffect(() => {
     http.post('/activity/activityTypeAll').then((res) => {
       setDataSource(res.data.data)
@@ -99,6 +96,9 @@ export default function ActivityTypeList() {
           addForm.resetFields()
           if (res.data.code === 200) {
             messageApi.success(res.data.msg)
+            setTimeout(() => {
+              window.location.reload()
+            }, 1000)
           } else {
             messageApi.error(res.data.msg)
           }

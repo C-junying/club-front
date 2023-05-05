@@ -1,7 +1,6 @@
-import { Form, Input, Upload } from 'antd'
-import { MyIcon } from '@/utils/MyIcon'
-import { baseURL } from '@/utils/http'
+import { Form, Input } from 'antd'
 import { useEffect, useState } from 'react'
+import MyUpload from '../other/MyUpload'
 
 export default function ClubTypeComponent(props) {
   const form = props.form
@@ -25,23 +24,10 @@ export default function ClubTypeComponent(props) {
       setLoading(false)
       // 让图片显示
       setImageUrl(info.file.response.data.img)
-      form.validateFields().then((values) => {
-        form.setFieldsValue({ ...values, picture: info.file.response.data.img })
-      })
+      form.setFieldValue('picture', info.file.response.data.img)
     }
     return info && info.fileList
   }
-  const uploadButton = (
-    <div>
-      {loading ? MyIcon('LoadingOutlined') : MyIcon('PlusOutlined')}
-      <div
-        style={{
-          marginTop: 8,
-        }}>
-        Upload
-      </div>
-    </div>
-  )
   return (
     <Form form={form} layout="vertical" name="form_in_modal" validateTrigger={['onBlur', 'onChange']}>
       <Form.Item name="type_id" label="类型编号" hidden>
@@ -60,31 +46,14 @@ export default function ClubTypeComponent(props) {
         ]}>
         <Input placeholder="请输入类型名称" maxLength={21} />
       </Form.Item>
-      <Form.Item
-        name="picture"
-        label="头像"
-        valuePropName="picture"
-        getValueFromEvent={(e) => imageHandleChange(e)}
-        noStyle>
-        <Upload
-          name="file"
-          accept="image/png,image/jpeg,image/gif,image/tif,image/tga,image/bmp,image/dds,image/svg,image/eps,image/jpg"
-          listType="picture-card"
-          className="avatar-uploader"
-          showUploadList={false}
-          action={baseURL + 'images/uploadType'}>
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt="avatar"
-              style={{
-                width: '100%',
-              }}
-            />
-          ) : (
-            uploadButton
-          )}
-        </Upload>
+      <Form.Item name="picture" label="背景图" valuePropName="picture" noStyle>
+        <MyUpload
+          name="背景图"
+          imageUrl={imageUrl}
+          loading={loading}
+          href="images/uploadType"
+          imageHandleChange={imageHandleChange}
+        />
       </Form.Item>
       <Form.Item name="type_content" label="类型介绍">
         <Input.TextArea showCount maxLength={130} />

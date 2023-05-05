@@ -115,6 +115,9 @@ export default function MenuList() {
           form.resetFields()
           if (res.data.code === 200) {
             messageApi.success(res.data.msg)
+            setTimeout(() => {
+              window.location.reload()
+            }, 1000)
           } else {
             messageApi.error(res.data.msg)
           }

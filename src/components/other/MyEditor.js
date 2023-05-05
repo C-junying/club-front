@@ -5,6 +5,7 @@ import { EditorState, convertToRaw, ContentState } from 'draft-js'
 import draftToHtml from 'draftjs-to-html'
 import htmlToDraft from 'html-to-draftjs'
 import { http } from '@/utils/http'
+import { myBlockRenderer } from '../../utils/myBlockRenderer'
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
 import './index.css'
 
@@ -52,13 +53,16 @@ export default function MyEditor(props) {
       {contextHolder}
       <Editor
         editorState={editorState}
-        toolbarClassName="toolbarClassName"
-        wrapperClassName="my-editor"
-        editorClassName="toolbar"
+        toolbarClassName="toolbar-class"
+        wrapperClassName="demo-wrapper"
+        editorClassName="demo-editor"
         onEditorStateChange={(editorState) => setEditorState(editorState)}
+        customBlockRenderFunc={myBlockRenderer}
         onBlur={() => {
           // console.log(draftToHtml(convertToRaw(editorState.getCurrentContent())))
           let content = draftToHtml(convertToRaw(editorState.getCurrentContent()))
+          content = content.replace(/height: auto;width: auto/g, 'height: 10rem;width: 18rem')
+
           if (content === '' || content.trim() === '<p></p>') {
             content = ''
             setEditorState('')
@@ -74,6 +78,34 @@ export default function MyEditor(props) {
             previewImage: true,
             inputAccept: 'image/*',
             alt: { present: false, mandatory: false, previewImage: true },
+          },
+          options: [
+            'inline',
+            'blockType',
+            'fontSize',
+            'fontFamily',
+            'list',
+            'textAlign',
+            'colorPicker',
+            'link',
+            'embedded',
+            'image',
+            'remove',
+            'history',
+          ],
+          fontFamily: {
+            options: [
+              '宋体',
+              '黑体',
+              '楷体',
+              '微软雅黑',
+              'Arial',
+              'Georgia',
+              'Impact',
+              'Tahoma',
+              'Times New Roman',
+              'Verdana',
+            ],
           },
         }}
       />

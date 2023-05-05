@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Form, Input, Switch, Select, Upload } from 'antd'
-import { MyIcon } from '@/utils/MyIcon'
-import { baseURL } from '@/utils/http'
+import { Form, Input, Switch, Select } from 'antd'
+
+import MyUpload from '../other/MyUpload'
 
 export default function AddUserComponent(props) {
   const form = props.form
@@ -16,17 +16,6 @@ export default function AddUserComponent(props) {
     setImageUrl(props.imageUrl)
   }, [props.imageUrl])
 
-  const uploadButton = (
-    <div>
-      {loading ? MyIcon('LoadingOutlined') : MyIcon('PlusOutlined')}
-      <div
-        style={{
-          marginTop: 8,
-        }}>
-        Upload
-      </div>
-    </div>
-  )
   const imageHandleChange = (info) => {
     if (Array.isArray(info)) {
       return info
@@ -37,9 +26,7 @@ export default function AddUserComponent(props) {
     if (info.file.status === 'done') {
       setLoading(false)
       setImageUrl(info.file.response.data.img)
-      form.validateFields().then((values) => {
-        form.setFieldsValue({ ...values, picture: info.file.response.data.img })
-      })
+      form.setFieldValue('picture', info.file.response.data.img)
     }
     return info && info.fileList
   }
@@ -116,31 +103,14 @@ export default function AddUserComponent(props) {
       <Form.Item name="intro" label="介绍">
         <Input.TextArea showCount maxLength={130} />
       </Form.Item>
-      <Form.Item
-        name="picture"
-        label="头像"
-        valuePropName="picture"
-        getValueFromEvent={(e) => imageHandleChange(e)}
-        noStyle>
-        <Upload
-          name="file"
-          accept="image/png,image/jpeg,image/gif,image/tif,image/tga,image/bmp,image/dds,image/svg,image/eps,image/jpg"
-          listType="picture-card"
-          className="avatar-uploader"
-          showUploadList={false}
-          action={baseURL + 'images/uploadHead'}>
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt="avatar"
-              style={{
-                width: '100%',
-              }}
-            />
-          ) : (
-            uploadButton
-          )}
-        </Upload>
+      <Form.Item name="picture" label="头像" valuePropName="picture" noStyle>
+        <MyUpload
+          name="头像"
+          imageUrl={imageUrl}
+          loading={loading}
+          href="images/uploadHead"
+          imageHandleChange={imageHandleChange}
+        />
       </Form.Item>
       <Form.Item name="role_id" label="角色">
         <Select
