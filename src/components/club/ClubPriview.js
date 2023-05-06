@@ -9,6 +9,7 @@ export default function ClubPriview(props) {
   // 返回上一层
   const navigate = useNavigate()
   const [applyClubInfo, setApplyClubInfo] = useState(null)
+  const [teacherInfo, setTeacherInfo] = useState(null)
   //   获取链接数据
   const params = useParams()
   const auditList = [
@@ -16,10 +17,17 @@ export default function ClubPriview(props) {
     <Tag color="success">已通过</Tag>,
     <Tag color="error">未通过</Tag>,
   ]
+  const clubStateList = [
+    <Tag color="processing">未发布</Tag>,
+    <Tag color="success">已发布</Tag>,
+    <Tag color="error">解散</Tag>,
+  ]
   useEffect(() => {
     http.post('/club/applyIdApplyClub', params).then((res) => {
-      console.log(res)
-      setApplyClubInfo(res.data.data[0])
+      http.post('/teacher/clubIdTeacher', { clubId: res.data.data[0]['club_id'] }).then((teacher) => {
+        setApplyClubInfo(res.data.data[0])
+        setTeacherInfo(teacher.data.data[0])
+      })
     })
   }, [params])
   return (
@@ -27,16 +35,30 @@ export default function ClubPriview(props) {
       {applyClubInfo && (
         <div>
           <HeanderTitle onBack={() => navigate(-1)} title={applyClubInfo.name} />
-          <Descriptions size="small" bordered>
+          <Descriptions size="small" column={3} bordered>
             <Descriptions.Item label="申请者">{applyClubInfo['user_name']}</Descriptions.Item>
             <Descriptions.Item label="申请社团名称">{applyClubInfo['club_name']}</Descriptions.Item>
             <Descriptions.Item label="申请时间">{dateFormat(applyClubInfo['apply_time'])}</Descriptions.Item>
             <Descriptions.Item label="申请理由">{applyClubInfo['apply_content']}</Descriptions.Item>
-            <Descriptions.Item label="申请场地">{applyClubInfo['area_id']}</Descriptions.Item>
+            <Descriptions.Item label="申请场地">{applyClubInfo['area_name']}</Descriptions.Item>
             <Descriptions.Item label="审核状态">{auditList[applyClubInfo['apply_state']]}</Descriptions.Item>
-            <Descriptions.Item label="发布状态">{auditList[applyClubInfo['status']]}</Descriptions.Item>
-            <Descriptions.Item label="社团类型" span={2}>
-              {applyClubInfo['type_id']}
+            <Descriptions.Item label="发布状态">{clubStateList[applyClubInfo['state']]}</Descriptions.Item>
+            <Descriptions.Item label="社团类型" span={applyClubInfo['state'] === 0 ? 2 : 1}>
+              {applyClubInfo['type_name']}
+            </Descriptions.Item>
+            {applyClubInfo['state'] === 1 && (
+              <Descriptions.Item label="社团金额" span={1}>
+                {applyClubInfo['money']}
+              </Descriptions.Item>
+            )}
+            <Descriptions.Item label="指导老师" span={1}>
+              {teacherInfo['user_name']}
+            </Descriptions.Item>
+            <Descriptions.Item label="指导老师电话" span={1}>
+              {teacherInfo['phone']}
+            </Descriptions.Item>
+            <Descriptions.Item label="老师职位" span={1}>
+              {teacherInfo['position']}
             </Descriptions.Item>
             <Descriptions.Item label="社团logo" span={3}>
               <Image

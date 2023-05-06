@@ -9,6 +9,7 @@ import UpdatePassword from '@/components/user-manage/UpdatePassword'
 
 const { confirm } = Modal
 const { Search } = Input
+// 用户列表
 export default function UserList() {
   // 通知
   const [messageApi, contextHolder] = message.useMessage()
@@ -257,7 +258,7 @@ export default function UserList() {
           setImageUrl('')
         }}
         onOk={() => addFormOk()}>
-        <AddUserComponent form={form} roleList={roleList} imageUrl={imageUrl} />
+        <AddUserComponent form={form} roleList={roleList} imageUrl={imageUrl} setImageUrl={setImageUrl} />
       </Modal>
       <Modal
         open={updateOpen}
@@ -275,6 +276,7 @@ export default function UserList() {
           roleList={roleList}
           isHiddenPassword={hiddenPassword}
           imageUrl={imageUrl}
+          setImageUrl={setImageUrl}
         />
       </Modal>
       <Modal

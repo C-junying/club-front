@@ -11,6 +11,7 @@ const btnRegister = (
     或 <a href="/login">登录!</a>
   </Form.Item>
 )
+// 注册
 export default function Register() {
   return (
     <div className="register">

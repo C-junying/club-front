@@ -8,6 +8,8 @@ import AreaUpdate from '@/components/area/AreaUpdate'
 
 const { confirm } = Modal
 const { Search } = Input
+
+// 场地列表
 export default function AreaList() {
   // 通知
   const [messageApi, contextHolder] = message.useMessage()

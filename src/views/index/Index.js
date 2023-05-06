@@ -1,6 +1,7 @@
 import { Button } from 'antd'
 import { useNavigate } from 'react-router-dom'
 
+// 主页
 export default function Index() {
   const navigate = useNavigate()
   return (

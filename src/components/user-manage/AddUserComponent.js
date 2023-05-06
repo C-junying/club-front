@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Form, Input, Switch, Select } from 'antd'
 
 import MyUpload from '../other/MyUpload'
@@ -9,12 +9,8 @@ export default function AddUserComponent(props) {
   const handleChange = (value) => {
     console.log(`selected ${value}`)
   }
-  const [imageUrl, setImageUrl] = useState(props.imageUrl)
+  const { imageUrl, setImageUrl } = props
   const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    setImageUrl(props.imageUrl)
-  }, [props.imageUrl])
 
   const imageHandleChange = (info) => {
     if (Array.isArray(info)) {

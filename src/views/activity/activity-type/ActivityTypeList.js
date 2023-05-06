@@ -7,6 +7,8 @@ import ActivityTypeComponent from '@/components/activity/ActivityTypeComponent'
 
 const { confirm } = Modal
 const { Search } = Input
+
+// 活动类型列表
 export default function ActivityTypeList() {
   // 通知
   const [messageApi, contextHolder] = message.useMessage()
@@ -202,7 +204,7 @@ export default function ActivityTypeList() {
           setImageUrl('')
         }}
         onOk={() => addFormOk()}>
-        <ActivityTypeComponent form={addForm} imageUrl={imageUrl} />
+        <ActivityTypeComponent form={addForm} imageUrl={imageUrl} setImageUrl={setImageUrl} />
       </Modal>
       <Modal
         open={updateOpen}
@@ -215,7 +217,7 @@ export default function ActivityTypeList() {
           setImageUrl('')
         }}
         onOk={() => updateFormOk()}>
-        <ActivityTypeComponent form={updateForm} imageUrl={imageUrl} />
+        <ActivityTypeComponent form={updateForm} imageUrl={imageUrl} setImageUrl={setImageUrl} />
       </Modal>
     </div>
   )

@@ -2,6 +2,8 @@ import React from 'react'
 import { Button } from 'antd'
 import { http } from '@/utils/http'
 import { useNavigate } from 'react-router-dom'
+
+// 后台主页
 export default function Home() {
   const navigate = useNavigate()
   const ajax = () => {

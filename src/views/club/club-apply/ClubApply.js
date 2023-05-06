@@ -22,6 +22,7 @@ const items = [
     description: '保存草稿或者提交审核',
   },
 ]
+// 申请社团的相关操作
 export default function ClubApply() {
   // 跳转
   const navigate = useNavigate()
@@ -69,6 +70,7 @@ export default function ClubApply() {
   // 提交
   const handleSave = (auditState) => {
     applyInfo['apply_state'] = auditState
+    console.log(applyInfo, clubInfor)
     http.post('/club/addApplyClub', toHump({ applyInfo, clubInfor })).then((res) => {
       if (res.data.code === 200) messageApi.success(res.data.msg)
       else messageApi.error(res.data.msg)

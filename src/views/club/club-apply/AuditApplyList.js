@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Tag, message } from 'antd'
+import { Button, Modal, Table, Form, Tag, message, Input } from 'antd'
 import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
 import { toHump } from '@/utils/toHump'
 import { dateFormat } from '@/utils/time'
 import { NavLink } from 'react-router-dom'
 
-const { confirm } = Modal
-// 申请社团的列表
-export default function ClubApplyList() {
+import AuditApplyComponent from '../../../components/club/AuditApplyComponent'
+
+// 审核社团的操作
+export default function AuditApplyList() {
   // 通知
   const [messageApi, contextHolder] = message.useMessage()
   // table
   const [dataSource, setDataSource] = useState([])
   useEffect(() => {
-    http.post('/club/userApplyClubAll').then((res) => {
+    http.post('/club/applyClubAll').then((res) => {
       setDataSource(res.data.data)
     })
   }, [])
@@ -73,77 +73,85 @@ export default function ClubApplyList() {
       render: (item) => (
         <div>
           {item['apply_state'] === 0 && (
-            <Button danger shape="round" onClick={() => confirmMethod(item)}>
-              撤销
-            </Button>
-          )}
-          {item['apply_state'] === 1 && item['state'] === 0 && (
-            <Button danger shape="round" onClick={() => publishClub(item)}>
-              发布
-            </Button>
+            <>
+              <Button type="primary" onClick={() => handleState(item, 1)}>
+                通过
+              </Button>
+              <Button danger onClick={() => handleState(item, 2)}>
+                驳回
+              </Button>
+            </>
           )}
         </div>
       ),
     },
   ]
-  // 撤销社团的确认框
-  const confirmMethod = (item) => {
-    confirm({
-      title: '你确认撤销吗?',
-      icon: MyIcon('ExclamationCircleFilled'),
-      content: 'Some descriptions',
-      okText: '撤销',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk() {
-        deleteMothed(item)
-      },
-      onCancel() {
-        console.log('Cancel')
-      },
-    })
+  // 处理状态
+  const handleState = (item, state) => {
+    setApplyState(state)
+    setAuditOpen(true)
+    auditForm.setFieldsValue(item)
   }
-  // 撤销申请社团操作
-  const deleteMothed = (item) => {
-    console.log(item)
-    // 当前页面同步状态+后端同步
-    setDataSource(dataSource.filter((data) => data['apply_id'] !== item['apply_id']))
-    http.post('/club/deleteApplyClub', toHump(item)).then((res) => {
-      messageApi.success(res.data.msg)
-      setDataSource(dataSource.filter((data) => data['apply_id'] !== item['apply_id']))
-    })
-  }
-  // 发布社团
-  const publishClub = (item) => {
-    confirm({
-      title: '你确认发布吗?',
-      icon: MyIcon('ExclamationCircleFilled'),
-      content: 'Some descriptions',
-      okText: '确认',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk() {
-        item.state = 1
-        http.post('/club/releaseClub', toHump(item)).then((res) => {
-          messageApi.success(res.data.msg)
+  // 审核状态
+  const [applyState, setApplyState] = useState(0)
+  const [auditForm] = Form.useForm()
+  // 回复内容弹出框
+  const [auditOpen, setAuditOpen] = useState(false)
+
+  // 审核社团
+  const handleAudit = () => {
+    auditForm
+      .validateFields()
+      .then((values) => {
+        values['apply_state'] = applyState
+        http.post('/club/auditApplyClub', toHump(values)).then((res) => {
+          console.log(res.data)
+          setApplyState(0)
           setDataSource(
-            dataSource.map((data) => {
-              if (data['apply_id'] === item['apply_id']) {
-                data['state'] = 1
+            dataSource.map((item) => {
+              if (item['apply_id'] === values['apply_id']) {
+                item['apply_state'] = values['apply_state']
               }
-              return data
+              return item
             })
           )
+          setAuditOpen(false)
+          auditForm.resetFields()
+          if (res.data.code === 200) {
+            messageApi.success(res.data.msg)
+          } else {
+            messageApi.error(res.data.msg)
+          }
         })
-      },
-      onCancel() {
-        console.log('Cancel')
-      },
+      })
+      .catch((info) => {
+        console.log('Validate Failed:', info)
+      })
+  }
+  // 搜索
+  const onSearch = (value) => {
+    let href = '/club/searchApplyClub'
+    if (value === '') {
+      href = '/club/applyClubAll'
+    }
+    http.post(href, { keywords: value }).then((res) => {
+      setDataSource(res.data.data)
     })
   }
   return (
     <div>
       {contextHolder}
+      <div id="user_top">
+        <div></div>
+        <Input.Search
+          className="user_search"
+          placeholder="社团名称 申请者 电话"
+          allowClear
+          enterButton="Search"
+          size="large"
+          onSearch={onSearch}
+        />
+      </div>
       <Table
         id="table-antn-menu"
         columns={columns}
@@ -177,6 +185,19 @@ export default function ClubApplyList() {
         }}
         dataSource={dataSource}
       />
+      <Modal
+        open={auditOpen}
+        title="审核申请社团"
+        okText="确认"
+        cancelText="取消"
+        onCancel={() => {
+          setAuditOpen(false)
+          setApplyState(0)
+          auditForm.resetFields()
+        }}
+        onOk={() => handleAudit()}>
+        <AuditApplyComponent form={auditForm} />
+      </Modal>
     </div>
   )
 }

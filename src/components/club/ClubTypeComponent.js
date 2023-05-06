@@ -1,16 +1,13 @@
 import { Form, Input } from 'antd'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import MyUpload from '../other/MyUpload'
 
 export default function ClubTypeComponent(props) {
   const form = props.form
 
-  const [imageUrl, setImageUrl] = useState(props.imageUrl)
+  const { imageUrl, setImageUrl } = props
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    setImageUrl(props.imageUrl)
-  }, [props.imageUrl])
   const imageHandleChange = (info) => {
     if (Array.isArray(info)) {
       return info

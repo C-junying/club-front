@@ -4,6 +4,7 @@ import logo from '@/assets/logo.png'
 import './login.css'
 import { LoginComponent } from '@/components/login/LoginComponent'
 
+// 登录
 function Login() {
   // 手机与邮箱
   const lablePhone = (

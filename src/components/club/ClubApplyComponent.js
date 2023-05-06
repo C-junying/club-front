@@ -10,12 +10,26 @@ export default function ClubApplyComponent(props) {
   const [content, setContent] = useState('')
   // 判断内容是否是第一次加载
   const [flag, setFlag] = useState(true)
+  // 老师列表
+  const [teacherList, setTeacherList] = useState([])
   // 类型列表
   const [typeList, setTypeList] = useState([])
   // 显示图片地址
   const [imageUrl, setImageUrl] = useState('')
   const [loading, setLoading] = useState(false)
 
+  useEffect(() => {
+    http.post('/teacher/teacherAll').then((res) => {
+      setTeacherList(
+        res.data.data.map((item) => {
+          return {
+            teacher_intro: `${item['user_name']} (${item.college}) (${item.position})`,
+            teacher_id: item['teacher_id'],
+          }
+        })
+      )
+    })
+  }, [])
   useEffect(() => {
     http.post('/club/clubTypeAll').then((res) => {
       setTypeList(res.data.data)
@@ -99,6 +113,25 @@ export default function ClubApplyComponent(props) {
           fieldNames={{ label: 'type_name', value: 'type_id' }}
           onChange={handleChange}
           options={typeList}
+        />
+      </Form.Item>
+      <Form.Item
+        name="teacher_id"
+        label="指导老师"
+        rules={[
+          {
+            required: true,
+            message: '请选择指导老师!',
+            validateTrigger: 'onBlur',
+          },
+        ]}>
+        <Select
+          style={{
+            width: 250,
+          }}
+          fieldNames={{ label: 'teacher_intro', value: 'teacher_id' }}
+          onChange={handleChange}
+          options={teacherList}
         />
       </Form.Item>
       <Form.Item name="picture" label="背景图" valuePropName="picture" noStyle>

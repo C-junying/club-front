@@ -8,6 +8,8 @@ import AddMenu from '@/components/right-manage/AddMenu'
 import MenuTree from '@/components/right-manage/MenuTree'
 
 const { confirm } = Modal
+
+// 菜单列表
 export default function MenuList() {
   // 通知
   const [messageApi, contextHolder] = message.useMessage()
@@ -186,6 +188,9 @@ export default function MenuList() {
       setConfirmLoading(false)
       if (res.data.code === 200) {
         messageApi.success(res.data.msg)
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
       } else {
         messageApi.error(res.data.msg)
       }

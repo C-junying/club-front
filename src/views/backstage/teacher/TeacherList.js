@@ -1,50 +1,53 @@
 import React, { useEffect, useState } from 'react'
 import { Button, Modal, Table, Form, Input, message } from 'antd'
 import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
 import { toHump } from '@/utils/toHump'
-import ClubTypeComponent from '@/components/club/ClubTypeComponent'
+import { MyIcon } from '@/utils/MyIcon'
+import { dateFormat } from '@/utils/time'
+import TeacherComponent from '@/components/user-manage/TeacherComponent'
 
 const { confirm } = Modal
 const { Search } = Input
 
-// 社团类型列表
-export default function ClubTypeList() {
+// 老师列表
+export default function TeacherList() {
   // 通知
   const [messageApi, contextHolder] = message.useMessage()
-  // table操作
+  // table
   const [dataSource, setDataSource] = useState([])
-
-  //   图片地址
-  const [imageUrl, setImageUrl] = useState('')
-
   useEffect(() => {
-    http.post('/club/clubTypeAll').then((res) => {
+    http.post('/teacher/teacherAll').then((res) => {
       setDataSource(res.data.data)
     })
   }, [])
   const columns = [
     {
-      title: '社团类型名称',
-      dataIndex: 'type_name',
-      key: 'type_name',
+      title: '姓名',
+      dataIndex: 'user_name',
+      key: 'user_name',
       render: (key) => {
         return <b>{key}</b>
       },
     },
-
     {
-      title: '类型介绍',
-      dataIndex: 'type_content',
-      key: 'type_content',
+      title: '性别',
+      dataIndex: 'sex',
+      key: 'sex',
     },
     {
-      title: '头像',
-      dataIndex: 'picture',
-      key: 'picture',
-      render: (pic) => {
-        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : ''
-      },
+      title: '电话',
+      dataIndex: 'phone',
+      key: 'phone',
+    },
+    {
+      title: '学院',
+      dataIndex: 'college',
+      key: 'college',
+    },
+    {
+      title: '职位',
+      dataIndex: 'position',
+      key: 'position',
     },
     {
       title: '操作',
@@ -79,24 +82,25 @@ export default function ClubTypeList() {
       },
     })
   }
-  // 删除操作
+  // 删除老师操作
   const deleteMothed = (item) => {
-    console.log(item)
     // 当前页面同步状态+后端同步
-    setDataSource(dataSource.filter((data) => data['type_id'] !== item['type_id']))
-    http.post('/club/deleteClubType', toHump(item))
+    setDataSource(dataSource.filter((data) => data['teacher_id'] !== item['teacher_id']))
+    http.post('/teacher/deleteteacher', toHump(item))
   }
-  // 添加社团类型弹出框
-  const [addOpen, setAddOpen] = useState(false)
-  const [addForm] = Form.useForm()
+  // 添加老师弹出框
+  const [open, setOpen] = useState(false)
+  const [form] = Form.useForm()
 
   const addFormOk = () => {
-    addForm
+    form
       .validateFields()
       .then((values) => {
-        http.post('/club/addClubType', toHump(values)).then((res) => {
-          setAddOpen(false)
-          addForm.resetFields()
+        values.sex = !!values.sex ? '男' : '女'
+        http.post('/teacher/addteacher', toHump(values)).then((res) => {
+          console.log(res.data)
+          setOpen(false)
+          form.resetFields()
           if (res.data.code === 200) {
             messageApi.success(res.data.msg)
             setTimeout(() => {
@@ -112,28 +116,29 @@ export default function ClubTypeList() {
       })
   }
 
-  // 更新社团类型弹出框
+  // 更新老师弹出框
   const [updateOpen, setUpdateOpen] = useState(false)
   const [updateForm] = Form.useForm()
 
-  // 弹出更新社团类型
+  // 弹出更新老师
   const handleUpdate = (item) => {
     setUpdateOpen(true)
-    setImageUrl(item.picture)
     updateForm.setFieldsValue(item)
+    item.sex === '男' ? updateForm.setFieldValue('sex', true) : updateForm.setFieldValue('sex', false)
   }
   const updateFormOk = () => {
     updateForm
       .validateFields()
       .then((values) => {
-        http.post('/club/updateClubType', toHump(values)).then((res) => {
+        values.sex = !!values.sex ? '男' : '女'
+        http.post('/teacher/updateteacher', toHump(values)).then((res) => {
           console.log(res.data)
           setUpdateOpen(false)
           updateForm.resetFields()
           if (res.data.code === 200) {
             setDataSource(
               dataSource.map((item) => {
-                if (item['type_id'] === values['type_id']) {
+                if (item['teacher_id'] === values['teacher_id']) {
                   return values
                 }
                 return item
@@ -149,13 +154,13 @@ export default function ClubTypeList() {
         console.log('Validate Failed:', info)
       })
   }
-  // 模糊查询
+  // 搜索
   const onSearch = (value) => {
-    let href = '/club/clubTypeSearch'
+    let href = '/teacher/teacherSearch'
     if (value === '') {
-      href = '/club/clubTypeAll'
+      href = '/teacher/teacherAll'
     }
-    http.post(href, { search: value }).then((res) => {
+    http.post(href, { keywords: value }).then((res) => {
       setDataSource(res.data.data)
     })
   }
@@ -163,12 +168,12 @@ export default function ClubTypeList() {
     <div>
       {contextHolder}
       <div id="user_top">
-        <Button type="primary" shape="round" onClick={() => setAddOpen(true)}>
-          添加社团类型
+        <Button type="primary" shape="round" onClick={() => setOpen(true)}>
+          添加老师
         </Button>
         <Search
           className="user_search"
-          placeholder="名称 备注"
+          placeholder="姓名 电话 学院 职位"
           allowClear
           enterButton="Search"
           size="large"
@@ -178,7 +183,7 @@ export default function ClubTypeList() {
       <Table
         id="table-antn-menu"
         columns={columns}
-        rowKey="type_id"
+        rowKey="user_id"
         pagination={{
           position: ['bottomCenter'],
           showQuickJumper: true,
@@ -190,31 +195,30 @@ export default function ClubTypeList() {
         }}
         dataSource={dataSource}
       />
+
       <Modal
-        open={addOpen}
-        title="添加社团类型"
+        open={open}
+        title="添加老师"
         okText="添加"
         cancelText="取消"
         onCancel={() => {
-          setAddOpen(false)
-          setImageUrl('')
-          addForm.resetFields()
+          setOpen(false)
+          form.resetFields()
         }}
         onOk={() => addFormOk()}>
-        <ClubTypeComponent form={addForm} imageUrl={imageUrl} setImageUrl={setImageUrl} />
+        <TeacherComponent form={form} />
       </Modal>
       <Modal
         open={updateOpen}
-        title="更新社团类型"
+        title="更新老师"
         okText="更新"
         cancelText="取消"
         onCancel={() => {
           setUpdateOpen(false)
-          setImageUrl('')
           updateForm.resetFields()
         }}
         onOk={() => updateFormOk()}>
-        <ClubTypeComponent form={updateForm} imageUrl={imageUrl} setImageUrl={setImageUrl} />
+        <TeacherComponent form={updateForm} isHidden={true} />
       </Modal>
     </div>
   )
