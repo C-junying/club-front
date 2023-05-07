@@ -25,7 +25,7 @@ export default function AuditApplyList() {
       key: 'name',
       render: (key, item) => {
         return (
-          <NavLink to={`/club/preview/${item['apply_id']}`}>
+          <NavLink to={`preview/${item['apply_id']}`}>
             <b>{key}</b>
           </NavLink>
         )
@@ -105,7 +105,6 @@ export default function AuditApplyList() {
       .then((values) => {
         values['apply_state'] = applyState
         http.post('/club/auditApplyClub', toHump(values)).then((res) => {
-          console.log(res.data)
           setApplyState(0)
           setDataSource(
             dataSource.map((item) => {

@@ -21,6 +21,11 @@ import ClubPriview from '@/components/club/ClubPriview'
 import AuditApplyList from '@/views/club/club-apply/AuditApplyList'
 import TeacherList from '@/views/backstage/teacher/TeacherList'
 import MyClub from '@/views/club/club/my-club/MyClub'
+import MyClubIntro from '@/views/club/club/my-club/MyClubIntro'
+import ClubInformation from '@/views/club/club/my-club/ClubInformation'
+import ClubMember from '@/views/club/club/my-club/ClubMember'
+import ClubReport from '@/views/club/club/my-club/ClubReport'
+import ClubActivity from '@/views/club/club/my-club/ClubActivity'
 
 // const LazyLoad = (path) => { //传入在view 下的路径
 //   const Comp = React.lazy(() => import(`../view${path}`))
@@ -88,7 +93,7 @@ export default function IndexRouter() {
           element: <ClubTypeList />,
         },
         {
-          path: 'club-apply',
+          path: 'club-apply/apply',
           element: <ClubApply />,
         },
         {
@@ -96,7 +101,11 @@ export default function IndexRouter() {
           element: <ClubApplyList />,
         },
         {
-          path: 'preview/:applyId',
+          path: 'club-apply/list/preview/:applyId',
+          element: <ClubPriview />,
+        },
+        {
+          path: 'club-apply/audit/list/preview/:applyId',
           element: <ClubPriview />,
         },
         {
@@ -106,6 +115,32 @@ export default function IndexRouter() {
         {
           path: 'my-club',
           element: <MyClub />,
+        },
+        {
+          path: 'my-club/:clubId/intro',
+          element: <MyClubIntro />,
+          children: [
+            {
+              path: '',
+              element: <Navigate to="information" />,
+            },
+            {
+              path: 'information',
+              element: <ClubInformation />,
+            },
+            {
+              path: 'member',
+              element: <ClubMember />,
+            },
+            {
+              path: 'activity',
+              element: <ClubActivity />,
+            },
+            {
+              path: 'report',
+              element: <ClubReport />,
+            },
+          ],
         },
       ],
     },

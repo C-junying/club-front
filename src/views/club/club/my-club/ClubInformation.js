@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Descriptions, Tag, Image } from 'antd'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { http } from '@/utils/http'
 import { dateFormat } from '@/utils/time'
-import HeanderTitle from '../other/HeanderTitle'
-
-export default function ClubPriview() {
-  // 返回上一层
-  const navigate = useNavigate()
+export default function ClubInformation() {
   const [applyClubInfo, setApplyClubInfo] = useState(null)
   const [teacherInfo, setTeacherInfo] = useState(null)
   //   获取链接数据
@@ -23,7 +19,7 @@ export default function ClubPriview() {
     <Tag color="error">解散</Tag>,
   ]
   useEffect(() => {
-    http.post('/club/applyIdApplyClub', params).then((res) => {
+    http.post('/club/clubIdApplyClub', params).then((res) => {
       http.post('/teacher/clubIdTeacher', { clubId: res.data.data[0]['club_id'] }).then((teacher) => {
         setApplyClubInfo(res.data.data[0])
         setTeacherInfo(teacher.data.data[0])
@@ -34,13 +30,12 @@ export default function ClubPriview() {
     <div>
       {applyClubInfo && (
         <div>
-          <HeanderTitle onBack={() => navigate(-1)} title={applyClubInfo.name} />
           <Descriptions size="small" column={3} bordered>
-            <Descriptions.Item label="申请者">{applyClubInfo['user_name']}</Descriptions.Item>
-            <Descriptions.Item label="申请社团名称">{applyClubInfo['club_name']}</Descriptions.Item>
-            <Descriptions.Item label="申请时间">{dateFormat(applyClubInfo['apply_time'])}</Descriptions.Item>
+            <Descriptions.Item label="社长">{applyClubInfo['user_name']}</Descriptions.Item>
+            <Descriptions.Item label="社团名称">{applyClubInfo['club_name']}</Descriptions.Item>
+            <Descriptions.Item label="创建时间">{dateFormat(applyClubInfo['apply_time'])}</Descriptions.Item>
             <Descriptions.Item label="申请理由">{applyClubInfo['apply_content']}</Descriptions.Item>
-            <Descriptions.Item label="申请场地">{applyClubInfo['area_name']}</Descriptions.Item>
+            <Descriptions.Item label="社团场地">{applyClubInfo['area_name']}</Descriptions.Item>
             <Descriptions.Item label="审核状态">{auditList[applyClubInfo['apply_state']]}</Descriptions.Item>
             <Descriptions.Item label="发布状态">{clubStateList[applyClubInfo['state']]}</Descriptions.Item>
             <Descriptions.Item label="社团类型" span={applyClubInfo['state'] === 0 ? 2 : 1}>
@@ -81,12 +76,6 @@ export default function ClubPriview() {
                     margin: '0 24px',
                   }}></div>
               }
-            </Descriptions.Item>
-            <Descriptions.Item label="回复内容" span={3}>
-              {applyClubInfo.reply}
-            </Descriptions.Item>
-            <Descriptions.Item label="回复时间">
-              {applyClubInfo['reply_time'] && dateFormat(applyClubInfo['reply_time'])}
             </Descriptions.Item>
           </Descriptions>
         </div>

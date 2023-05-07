@@ -25,7 +25,7 @@ function setPath(path) {
   let temp = path.split('/').slice(1)
   let a = []
   a.push('/' + temp[0])
-  for (let i = 1; i < temp.length - 1; i++) {
+  for (let i = 1; i < temp.length; i++) {
     a.push('/' + temp[i])
     a[i] = a[i - 1] + a[i]
   }

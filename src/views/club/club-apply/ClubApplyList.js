@@ -25,7 +25,7 @@ export default function ClubApplyList() {
       key: 'name',
       render: (key, item) => {
         return (
-          <NavLink to={`/club/preview/${item['apply_id']}`}>
+          <NavLink to={`preview/${item['apply_id']}`}>
             <b>{key}</b>
           </NavLink>
         )
@@ -105,9 +105,7 @@ export default function ClubApplyList() {
   }
   // 撤销申请社团操作
   const deleteMothed = (item) => {
-    console.log(item)
     // 当前页面同步状态+后端同步
-    setDataSource(dataSource.filter((data) => data['apply_id'] !== item['apply_id']))
     http.post('/club/deleteApplyClub', toHump(item)).then((res) => {
       messageApi.success(res.data.msg)
       setDataSource(dataSource.filter((data) => data['apply_id'] !== item['apply_id']))

@@ -13,17 +13,16 @@ export default function SideMenu() {
   const location = useLocation()
 
   const [menu, setmenu] = useState([])
-  const [pathname, setPathName] = useState(
-    location.pathname === '/backstage' ? '/backstage/home' : location.pathname
+
+  const [selectKey, setSelectKey] = useState(
+    setPath(location.pathname === '/backstage' ? '/backstage/home' : location.pathname)
   )
-  const [selectKey, setSelectKey] = useState(setPath(pathname))
   useEffect(() => {
     http.post('/menu/menuList').then((res) => {
       setmenu(res.data.data)
     })
   }, [])
   useEffect(() => {
-    setPathName(location.pathname)
     setSelectKey(setPath(location.pathname))
   }, [location.pathname])
   items = setItems(menu)
@@ -33,12 +32,11 @@ export default function SideMenu() {
       <Menu
         theme="dark"
         mode="inline"
-        defaultSelectedKeys={[pathname]}
+        defaultSelectedKeys={selectKey}
         defaultOpenKeys={selectKey}
         onClick={({ key, keyPath, domEvent }) => {
           // console.log(key, keyPath, domEvent)
           navigate(key)
-          setPathName(key)
         }}
         items={items}
       />

@@ -37,6 +37,11 @@ export default function RoleList() {
       },
     },
     {
+      title: '级别',
+      dataIndex: 'rank',
+      key: 'rank',
+    },
+    {
       title: '备注',
       dataIndex: 'remark',
       key: 'remark',

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Form, Input } from 'antd'
+import { Form, Input, InputNumber } from 'antd'
 export default function AddRole(props) {
   const form = props.form
   return (
@@ -22,6 +22,9 @@ export default function AddRole(props) {
       </Form.Item>
       <Form.Item name="role_logo" label="logo">
         <Input placeholder="请输入角色logo" />
+      </Form.Item>
+      <Form.Item name="rank" label="级别" initialValue={0}>
+        <InputNumber min={0} max={100000} />
       </Form.Item>
       <Form.Item name="remark" label="备注">
         <Input.TextArea showCount maxLength={130} />

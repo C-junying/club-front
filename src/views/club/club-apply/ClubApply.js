@@ -70,11 +70,10 @@ export default function ClubApply() {
   // 提交
   const handleSave = (auditState) => {
     applyInfo['apply_state'] = auditState
-    console.log(applyInfo, clubInfor)
     http.post('/club/addApplyClub', toHump({ applyInfo, clubInfor })).then((res) => {
       if (res.data.code === 200) messageApi.success(res.data.msg)
       else messageApi.error(res.data.msg)
-      navigate('list')
+      navigate('/club/club-apply/list')
       notification.info({
         message: `通知`,
         description: `您可以到审核列表中查看您的申请记录`,
