@@ -4,6 +4,7 @@ import { http } from '@/utils/http'
 import { MyIcon } from '@/utils/MyIcon'
 import { toHump } from '@/utils/toHump'
 import { useParams } from 'react-router-dom'
+import ClubMemberConponent from '../../../../components/club/ClubMemberConponent'
 
 const { confirm } = Modal
 const { Search } = Input
@@ -23,6 +24,7 @@ export default function ClubMember() {
       setDataSource(res.data.data)
     })
   }, [params])
+  // 获取当前用户的信息
   useEffect(() => {
     http.post('/club/clubIdUserIdToBearName', toHump(params)).then((res) => {
       if (res.data.data.member.length > 0) {
@@ -75,7 +77,25 @@ export default function ClubMember() {
             shape="circle"
             icon={MyIcon('DeleteOutlined')}
             onClick={() => confirmMethod(item)}
-            hidden={myUser['bear_name'] === '社长' ? false : true}
+            hidden={
+              (myUser['bear_name'] === '社长' ? false : true) ||
+              (item['bear_name'] === '指导老师' ? true : false) ||
+              (item['bear_name'] === '社长' ? true : false)
+            }
+          />
+          <Button
+            type="primary"
+            shape="circle"
+            icon={MyIcon('UnorderedListOutlined')}
+            onClick={() => {
+              setMemberBearOpen(true)
+              memberBearForm.setFieldsValue(item)
+            }}
+            hidden={
+              (myUser['bear_name'] === '社长' ? false : true) ||
+              (item['bear_name'] === '指导老师' ? true : false) ||
+              (item['bear_name'] === '社长' ? true : false)
+            }
           />
         </div>
       ),
@@ -115,6 +135,31 @@ export default function ClubMember() {
         http.post('/club/addMember', toHump(values)).then((res) => {
           setMemberOpen(false)
           memberForm.resetFields()
+          if (res.data.code === 200) {
+            messageApi.success(res.data.msg)
+            setTimeout(() => {
+              window.location.reload()
+            }, 1000)
+          } else {
+            messageApi.error(res.data.msg)
+          }
+        })
+      })
+      .catch((info) => {
+        console.log('Validate Failed:', info)
+      })
+  }
+  // 分配职位
+  const [memberBear, setMemberBearOpen] = useState(false)
+  const [memberBearForm] = Form.useForm()
+
+  const memberBearFormOk = () => {
+    memberBearForm
+      .validateFields()
+      .then((values) => {
+        http.post('/club/updateMemberBear', toHump(values)).then((res) => {
+          setMemberBearOpen(false)
+          memberBearForm.resetFields()
           if (res.data.code === 200) {
             messageApi.success(res.data.msg)
             setTimeout(() => {
@@ -186,38 +231,19 @@ export default function ClubMember() {
           memberForm.resetFields()
         }}
         onOk={() => addMemberFormOk()}>
-        <Form
-          form={memberForm}
-          layout="vertical"
-          name="form_in_modal"
-          validateTrigger={['onBlur', 'onChange']}>
-          <Form.Item
-            name="user_name"
-            label="姓名"
-            rules={[
-              { type: 'string', max: 20, message: '姓名最多20个字符', validateTrigger: 'onBlur' },
-              {
-                required: true,
-                message: '请输入姓名!',
-                validateTrigger: 'onBlur',
-              },
-            ]}>
-            <Input placeholder="请输入姓名" maxLength={21} />
-          </Form.Item>
-          <Form.Item
-            name="phone"
-            label="手机"
-            rules={[
-              {
-                pattern: /^(?:(?:\+|00)86)?1\d{10}$/,
-                message: '手机号码格式不对',
-                validateTrigger: 'onBlur',
-              },
-              { required: true, message: '请输入手机号' },
-            ]}>
-            <Input placeholder="请输入手机号" />
-          </Form.Item>
-        </Form>
+        <ClubMemberConponent form={memberForm} />
+      </Modal>
+      <Modal
+        open={memberBear}
+        title="分配职位"
+        okText="分配"
+        cancelText="取消"
+        onCancel={() => {
+          setMemberBearOpen(false)
+          memberBearForm.resetFields()
+        }}
+        onOk={() => memberBearFormOk()}>
+        <ClubMemberConponent form={memberBearForm} isDisabled={true} />
       </Modal>
     </>
   )

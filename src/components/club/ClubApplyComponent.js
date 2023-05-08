@@ -139,7 +139,7 @@ export default function ClubApplyComponent(props) {
           name="背景图"
           imageUrl={imageUrl}
           loading={loading}
-          href="images/uploadType"
+          href="images/uploadClub"
           imageHandleChange={imageHandleChange}
         />
       </Form.Item>

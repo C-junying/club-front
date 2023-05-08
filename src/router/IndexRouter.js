@@ -26,6 +26,9 @@ import ClubInformation from '@/views/club/club/my-club/ClubInformation'
 import ClubMember from '@/views/club/club/my-club/ClubMember'
 import ClubReport from '@/views/club/club/my-club/ClubReport'
 import ClubActivity from '@/views/club/club/my-club/ClubActivity'
+import AddClubReport from '@/components/club/AddClubReport'
+import ClubReportPreview from '@/components/club/ClubReportPreview'
+import UpdateClub from '@/components/club/UpdateClub'
 
 // const LazyLoad = (path) => { //传入在view 下的路径
 //   const Comp = React.lazy(() => import(`../view${path}`))
@@ -141,6 +144,18 @@ export default function IndexRouter() {
               element: <ClubReport />,
             },
           ],
+        },
+        {
+          path: 'my-club/:clubId/intro/information/update',
+          element: <UpdateClub />,
+        },
+        {
+          path: 'my-club/:clubId/intro/report/:userId',
+          element: <AddClubReport />,
+        },
+        {
+          path: 'my-club/:clubId/intro/report/preview/:reportId',
+          element: <ClubReportPreview />,
         },
       ],
     },

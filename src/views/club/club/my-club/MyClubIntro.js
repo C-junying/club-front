@@ -55,7 +55,7 @@ export default function MyClubIntro() {
   }, [params])
   return (
     <>
-      <HeanderTitle title={title} onBack={() => navigate('/club/my-club')} />
+      <HeanderTitle title={title} onBack={() => navigate(-2)} />
       <Menu
         onClick={onClick}
         selectedKeys={[current]}
