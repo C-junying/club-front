@@ -42,3 +42,17 @@
 .table_hidden {
     display: none;
 }
+
+.danger-btn {
+    display   : block;
+    min-height: 200px;
+    width     : 100%;
+    margin-top: 100px;
+    text-align: center;
+}
+
+.danger-btn .btn {
+    width    : 20%;
+    height   : inherit;
+    font-size: 2rem;
+}

@@ -5,6 +5,20 @@ import { MyIcon } from '@/utils/MyIcon'
 import HeanderTitle from '@/components/other/HeanderTitle'
 import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
 export default function MyClubIntro() {
+  //   获取链接数据
+  const params = useParams()
+  // 当前用户数据
+  // user
+  const [myUser, setMyUser] = useState({})
+  useEffect(() => {
+    http.post('/club/clubIdUserIdToBearName', params).then((res) => {
+      if (res.data.data.member.length > 0) {
+        setMyUser(res.data.data.member[0])
+      } else if (res.data.data.taecher.length > 0) {
+        setMyUser(res.data.data.taecher[0])
+      }
+    })
+  }, [params])
   const items = [
     {
       label: '社团信息',
@@ -27,6 +41,27 @@ export default function MyClubIntro() {
       icon: MyIcon('SolutionOutlined'),
     },
   ]
+  if (myUser['bear_name'] === '社长' || myUser['bear_name'] === '副社长') {
+    items.push(
+      {
+        label: '申请活动',
+        key: 'apply-activity',
+        icon: MyIcon('AppstoreAddOutlined'),
+      },
+      {
+        label: '申请活动列表',
+        key: 'apply-activity-list',
+        icon: MyIcon('UnorderedListOutlined'),
+      }
+    )
+  }
+  if (myUser['bear_name'] === '社长') {
+    items.push({
+      label: '社团解散',
+      key: 'club-disband',
+      icon: MyIcon('DeleteOutlined'),
+    })
+  }
   // 跳转
   const navigate = useNavigate()
   const location = useLocation()
@@ -42,10 +77,8 @@ export default function MyClubIntro() {
   // 顶部菜单点击响应
   const onClick = (e) => {
     setCurrent(e.key)
-    navigate(e.key)
+    navigate(e.key, { state: myUser, replace: true })
   }
-  //   获取链接数据
-  const params = useParams()
   // 社团名称
   const [title, setTitle] = useState('我的社团')
   useEffect(() => {
@@ -53,6 +86,7 @@ export default function MyClubIntro() {
       setTitle(res.data.data[0]['club_name'])
     })
   }, [params])
+
   return (
     <>
       <HeanderTitle title={title} onBack={() => navigate(-2)} />

@@ -4,7 +4,7 @@ import { http } from '@/utils/http'
 import { toHump } from '@/utils/toHump'
 import { dateFormat } from '@/utils/time'
 import { MyIcon } from '@/utils/MyIcon'
-import { NavLink, useParams } from 'react-router-dom'
+import { NavLink, useLocation, useParams } from 'react-router-dom'
 
 const { confirm } = Modal
 // 学期报告
@@ -12,6 +12,7 @@ export default function ClubReport() {
   // 通知
   const [messageApi, contextHolder] = message.useMessage()
   const params = useParams()
+  // 获取传来的数据
   // table
   const [dataSource, setDataSource] = useState([])
   // user
@@ -21,16 +22,12 @@ export default function ClubReport() {
       setDataSource(res.data.data)
     })
   }, [params])
-  // 获取当前用户的信息
+  const location = useLocation()
   useEffect(() => {
-    http.post('/club/clubIdUserIdToBearName', toHump(params)).then((res) => {
-      if (res.data.data.member.length > 0) {
-        setMyUser(res.data.data.member[0])
-      } else if (res.data.data.taecher.length > 0) {
-        setMyUser(res.data.data.taecher[0])
-      }
-    })
-  }, [params])
+    // 获取当前用户的信息
+    // 获取传来的数据
+    setMyUser(location.state)
+  }, [location])
   const columns = [
     {
       title: '总结主题',

@@ -3,8 +3,8 @@ import { Button, Modal, Table, Form, Input, message } from 'antd'
 import { http } from '@/utils/http'
 import { MyIcon } from '@/utils/MyIcon'
 import { toHump } from '@/utils/toHump'
-import { useParams } from 'react-router-dom'
-import ClubMemberConponent from '../../../../components/club/ClubMemberConponent'
+import { useParams, useLocation } from 'react-router-dom'
+import ClubMemberConponent from '@/components/club/ClubMemberConponent'
 
 const { confirm } = Modal
 const { Search } = Input
@@ -19,19 +19,15 @@ export default function ClubMember() {
   const [myUser, setMyUser] = useState({})
   //   获取链接数据
   const params = useParams()
+  const location = useLocation()
+  useEffect(() => {
+    // 获取当前用户的信息
+    // 获取传来的数据
+    setMyUser(location.state)
+  }, [location])
   useEffect(() => {
     http.post('/club/getClubMember', toHump(params)).then((res) => {
       setDataSource(res.data.data)
-    })
-  }, [params])
-  // 获取当前用户的信息
-  useEffect(() => {
-    http.post('/club/clubIdUserIdToBearName', toHump(params)).then((res) => {
-      if (res.data.data.member.length > 0) {
-        setMyUser(res.data.data.member[0])
-      } else if (res.data.data.taecher.length > 0) {
-        setMyUser(res.data.data.taecher[0])
-      }
     })
   }, [params])
   const columns = [

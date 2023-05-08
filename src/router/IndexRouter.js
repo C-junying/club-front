@@ -11,7 +11,7 @@ import MenuList from '@/views/backstage/right-manage/MenuList'
 import Error from '@/components/back-stage/Error'
 import AuthRouter from './AuthRouter'
 import AreaList from '@/views/area/AreaList'
-import ClubList from '@/views/club/club/ClubList'
+import ClubList from '@/views/club/ClubList'
 import ActivityList from '@/views/activity/activity/ActivityList'
 import ClubTypeList from '@/views/club/club-type/ClubTypeList'
 import ActivityTypeList from '@/views/activity/activity-type/ActivityTypeList'
@@ -20,15 +20,18 @@ import ClubApplyList from '@/views/club/club-apply/ClubApplyList'
 import ClubPriview from '@/components/club/ClubPriview'
 import AuditApplyList from '@/views/club/club-apply/AuditApplyList'
 import TeacherList from '@/views/backstage/teacher/TeacherList'
-import MyClub from '@/views/club/club/my-club/MyClub'
-import MyClubIntro from '@/views/club/club/my-club/MyClubIntro'
-import ClubInformation from '@/views/club/club/my-club/ClubInformation'
-import ClubMember from '@/views/club/club/my-club/ClubMember'
-import ClubReport from '@/views/club/club/my-club/ClubReport'
-import ClubActivity from '@/views/club/club/my-club/ClubActivity'
+import MyClub from '@/views/club/my-club/MyClub'
+import MyClubIntro from '@/views/club/my-club/MyClubIntro'
+import ClubInformation from '@/views/club/my-club/ClubInformation'
+import ClubMember from '@/views/club/my-club/ClubMember'
+import ClubReport from '@/views/club/my-club/ClubReport'
+import ClubActivity from '@/views/club/my-club/ClubActivity'
 import AddClubReport from '@/components/club/AddClubReport'
 import ClubReportPreview from '@/components/club/ClubReportPreview'
 import UpdateClub from '@/components/club/UpdateClub'
+import ClubDisband from '@/views/club/my-club/ClubDisband'
+import ApplyActivity from '../views/club/activity-apply/ApplyActivity'
+import ApplyActivityList from '../views/club/activity-apply/ApplyActivityList'
 
 // const LazyLoad = (path) => { //传入在view 下的路径
 //   const Comp = React.lazy(() => import(`../view${path}`))
@@ -142,6 +145,18 @@ export default function IndexRouter() {
             {
               path: 'report',
               element: <ClubReport />,
+            },
+            {
+              path: 'apply-activity',
+              element: <ApplyActivity />,
+            },
+            {
+              path: 'apply-activity-list',
+              element: <ApplyActivityList />,
+            },
+            {
+              path: 'club-disband',
+              element: <ClubDisband />,
             },
           ],
         },
