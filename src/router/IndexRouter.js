@@ -30,8 +30,14 @@ import AddClubReport from '@/components/club/AddClubReport'
 import ClubReportPreview from '@/components/club/ClubReportPreview'
 import UpdateClub from '@/components/club/UpdateClub'
 import ClubDisband from '@/views/club/my-club/ClubDisband'
-import ApplyActivity from '../views/club/activity-apply/ApplyActivity'
-import ApplyActivityList from '../views/club/activity-apply/ApplyActivityList'
+import ApplyActivity from '@/views/club/activity-apply/ApplyActivity'
+import ApplyActivityList from '@/views/club/activity-apply/ApplyActivityList'
+import ApplyMoney from '@/views/club/my-club/ApplyMoney'
+import AuditCostApplyList from '@/views/cost/AuditCostApplyList'
+import CostList from '@/views/cost/CostList'
+import ClubCostList from '@/views/club/my-club/ClubCostList'
+import ActivityPriview from '@/components/activity/ActivityPriview'
+import AuditActivityApplyList from '../views/activity/activity-apply/AuditActivityApplyList'
 
 // const LazyLoad = (path) => { //传入在view 下的路径
 //   const Comp = React.lazy(() => import(`../view${path}`))
@@ -155,10 +161,23 @@ export default function IndexRouter() {
               element: <ApplyActivityList />,
             },
             {
+              path: 'apply-money',
+              element: <ApplyMoney />,
+            },
+
+            {
+              path: 'cost-list',
+              element: <ClubCostList />,
+            },
+            {
               path: 'club-disband',
               element: <ClubDisband />,
             },
           ],
+        },
+        {
+          path: 'my-club/:clubId/intro/apply-activity-list/preview/:activityId',
+          element: <ActivityPriview />,
         },
         {
           path: 'my-club/:clubId/intro/information/update',
@@ -186,6 +205,14 @@ export default function IndexRouter() {
           path: 'activity-type/list',
           element: <ActivityTypeList />,
         },
+        {
+          path: 'activity-apply/audit/list',
+          element: <AuditActivityApplyList />,
+        },
+        {
+          path: 'activity-apply/audit/list/preview/:activityId',
+          element: <ActivityPriview />,
+        },
       ],
     },
     {
@@ -195,6 +222,20 @@ export default function IndexRouter() {
         {
           path: 'list',
           element: <AreaList />,
+        },
+      ],
+    },
+    {
+      path: '/cost',
+      element: <AuthRouter element={<BackStage />} />,
+      children: [
+        {
+          path: 'audit',
+          element: <AuditCostApplyList />,
+        },
+        {
+          path: 'cost-list',
+          element: <CostList />,
         },
       ],
     },

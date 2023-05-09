@@ -1,42 +1,34 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Tag, message } from 'antd'
+import { Button, Modal, Table, Tag, message, Form, Input, InputNumber } from 'antd'
 import { http } from '@/utils/http'
 import { MyIcon } from '@/utils/MyIcon'
 import { toHump } from '@/utils/toHump'
 import { dateFormat } from '@/utils/time'
-import { NavLink, useParams } from 'react-router-dom'
-
+import { useParams } from 'react-router-dom'
 const { confirm } = Modal
-// 申请活动的列表
-export default function ApplyActivityList() {
+
+// 社团申请资金
+export default function ApplyMoney() {
   // 通知
   const [messageApi, contextHolder] = message.useMessage()
   // table
   const [dataSource, setDataSource] = useState([])
   // 获取链接数据
   const params = useParams()
+
   useEffect(() => {
-    http.post('/activity/clubApplyActivityAll', toHump(params)).then((res) => {
+    http.post('/cost/getClubCostApply', params).then((res) => {
       setDataSource(res.data.data)
     })
   }, [params])
   const columns = [
     {
-      title: '活动名称',
-      dataIndex: 'name',
-      key: 'name',
-      render: (key, item) => {
-        return (
-          <NavLink to={`preview/${item['activity_id']}`}>
-            <b>{key}</b>
-          </NavLink>
-        )
-      },
-    },
-    {
       title: '社团名称',
       dataIndex: 'club_name',
       key: 'club_name',
+      render: (key) => {
+        return <b>{key}</b>
+      },
     },
     {
       title: '申请者',
@@ -47,9 +39,17 @@ export default function ApplyActivityList() {
       },
     },
     {
-      title: '电话',
-      dataIndex: 'phone',
-      key: 'phone',
+      title: '申请资金',
+      dataIndex: 'apply_cost',
+      key: 'apply_cost',
+    },
+    {
+      title: '申请时间',
+      dataIndex: 'apply_time',
+      key: 'apply_time',
+      render: (time) => {
+        return dateFormat(time)
+      },
     },
     {
       title: '申请状态',
@@ -76,16 +76,11 @@ export default function ApplyActivityList() {
               撤销
             </Button>
           )}
-          {item['apply_state'] === 1 && item['activity_state'] === 0 && (
-            <Button danger shape="round" onClick={() => publishClub(item)}>
-              发布
-            </Button>
-          )}
         </div>
       ),
     },
   ]
-  // 撤销活动的确认框
+  // 撤销社团的确认框
   const confirmMethod = (item) => {
     confirm({
       title: '你确认撤销吗?',
@@ -101,48 +96,52 @@ export default function ApplyActivityList() {
       },
     })
   }
-  // 撤销申请活动操作
+  // 撤销申请社团操作
   const deleteMothed = (item) => {
     // 当前页面同步状态+后端同步
-    http.post('/activity/deleteApplyActivity', toHump(item)).then((res) => {
+    http.post('/cost/deleteCostApply', toHump(item)).then((res) => {
       messageApi.success(res.data.msg)
-      setDataSource(dataSource.filter((data) => data['activity_id'] !== item['activity_id']))
+      setDataSource(dataSource.filter((data) => data['apply_id'] !== item['apply_id']))
     })
   }
-  // 发布活动
-  const publishClub = (item) => {
-    confirm({
-      title: '你确认发布吗?',
-      icon: MyIcon('ExclamationCircleFilled'),
-      okText: '确认',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk() {
-        item['activity_state'] = 1
-        http.post('/activity/releaseActivity', toHump(item)).then((res) => {
-          messageApi.success(res.data.msg)
-          setDataSource(
-            dataSource.map((data) => {
-              if (data['apply_id'] === item['apply_id']) {
-                data['activity_state'] = 1
-              }
-              return data
-            })
-          )
+  // 添加申请
+  const [costApplyOpen, setCostApplyOpen] = useState(false)
+  const [costApplyForm] = Form.useForm()
+  // 添加操作
+  const addCostApplyFormOk = () => {
+    costApplyForm
+      .validateFields()
+      .then((values) => {
+        values.clubId = params.clubId
+        http.post('/cost/addCostApply', toHump(values)).then((res) => {
+          setCostApplyOpen(false)
+          costApplyForm.resetFields()
+          if (res.data.code === 200) {
+            messageApi.success(res.data.msg)
+            setTimeout(() => {
+              window.location.reload()
+            }, 1000)
+          } else {
+            messageApi.error(res.data.msg)
+          }
         })
-      },
-      onCancel() {
-        console.log('Cancel')
-      },
-    })
+      })
+      .catch((info) => {
+        console.log('Validate Failed:', info)
+      })
   }
   return (
     <div>
       {contextHolder}
+      <div style={{ marginBottom: 5 }}>
+        <Button type="primary" shape="round" onClick={() => setCostApplyOpen(true)}>
+          添加申请
+        </Button>
+      </div>
       <Table
         id="table-antn-menu"
         columns={columns}
-        rowKey="activity_id"
+        rowKey="apply_id"
         pagination={{
           position: ['bottomCenter'],
           showQuickJumper: true,
@@ -155,10 +154,6 @@ export default function ApplyActivityList() {
         expandable={{
           expandedRowRender: (apply) => (
             <div style={{ margin: 0 }}>
-              <p>
-                <b style={{ color: 'red' }}>申请时间：</b>
-                {!!apply['apply_time'] && dateFormat(apply['apply_time'])}
-              </p>
               <p>
                 <b style={{ color: 'red' }}>申请理由：</b>
                 {apply['apply_content']}
@@ -176,6 +171,38 @@ export default function ApplyActivityList() {
         }}
         dataSource={dataSource}
       />
+      <Modal
+        open={costApplyOpen}
+        title="添加申请"
+        okText="添加"
+        cancelText="取消"
+        onCancel={() => {
+          setCostApplyOpen(false)
+          costApplyForm.resetFields()
+        }}
+        onOk={() => addCostApplyFormOk()}>
+        <Form
+          form={costApplyForm}
+          layout="vertical"
+          name="form_in_modal"
+          validateTrigger={['onBlur', 'onChange']}>
+          <Form.Item
+            name="apply_content"
+            label="申请理由"
+            rules={[
+              {
+                required: true,
+                message: '请输入理由!',
+                validateTrigger: 'onBlur',
+              },
+            ]}>
+            <Input.TextArea showCount maxLength={130} />
+          </Form.Item>
+          <Form.Item name="apply_cost" label="申请金额" initialValue={0}>
+            <InputNumber min={0} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   )
 }

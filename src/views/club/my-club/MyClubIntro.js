@@ -56,11 +56,23 @@ export default function MyClubIntro() {
     )
   }
   if (myUser['bear_name'] === '社长') {
-    items.push({
-      label: '社团解散',
-      key: 'club-disband',
-      icon: MyIcon('DeleteOutlined'),
-    })
+    items.push(
+      {
+        label: '申请资金',
+        key: 'apply-money',
+        icon: MyIcon('MoneyCollectOutlined'),
+      },
+      {
+        label: '费用清单',
+        key: 'cost-list',
+        icon: MyIcon('MoneyCollectOutlined'),
+      },
+      {
+        label: '社团解散',
+        key: 'club-disband',
+        icon: MyIcon('DeleteOutlined'),
+      }
+    )
   }
   // 跳转
   const navigate = useNavigate()

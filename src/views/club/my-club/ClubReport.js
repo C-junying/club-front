@@ -11,8 +11,9 @@ const { confirm } = Modal
 export default function ClubReport() {
   // 通知
   const [messageApi, contextHolder] = message.useMessage()
+  // 获取链接数据
   const params = useParams()
-  // 获取传来的数据
+  const location = useLocation()
   // table
   const [dataSource, setDataSource] = useState([])
   // user
@@ -22,7 +23,6 @@ export default function ClubReport() {
       setDataSource(res.data.data)
     })
   }, [params])
-  const location = useLocation()
   useEffect(() => {
     // 获取当前用户的信息
     // 获取传来的数据

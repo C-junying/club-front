@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Steps, Button, Form, message, notification } from 'antd'
 import HeanderTitle from '@/components/other/HeanderTitle'
-import '../../index.css'
+import '../index.css'
 import ApplyComponent from '@/components/other/ApplyComponent'
 import ClubApplyComponent from '@/components/club/ClubApplyComponent'
 import { http } from '@/utils/http'
@@ -19,7 +19,7 @@ const items = [
   },
   {
     title: '社团提交',
-    description: '保存草稿或者提交审核',
+    description: '提交审核',
   },
 ]
 // 申请社团的相关操作
@@ -71,13 +71,14 @@ export default function ClubApply() {
   const handleSave = (auditState) => {
     applyInfo['apply_state'] = auditState
     http.post('/club/addApplyClub', toHump({ applyInfo, clubInfor })).then((res) => {
-      if (res.data.code === 200) messageApi.success(res.data.msg)
-      else messageApi.error(res.data.msg)
-      navigate('/club/club-apply/list')
-      notification.info({
-        message: `通知`,
-        description: `您可以到审核列表中查看您的申请记录`,
-      })
+      if (res.data.code === 200) {
+        navigate('/club/club-apply/list')
+        notification.info({
+          message: `通知`,
+          description: `您可以到申请列表中查看您的申请记录`,
+        })
+        messageApi.success(res.data.msg)
+      } else messageApi.error(res.data.msg)
     })
   }
   return (

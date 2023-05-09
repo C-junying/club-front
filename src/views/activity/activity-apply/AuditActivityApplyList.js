@@ -1,25 +1,23 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Tag, message } from 'antd'
+import { Button, Modal, Table, Form, Tag, message, Input } from 'antd'
 import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
 import { toHump } from '@/utils/toHump'
 import { dateFormat } from '@/utils/time'
-import { NavLink, useParams } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 
-const { confirm } = Modal
-// 申请活动的列表
-export default function ApplyActivityList() {
+import AuditApplyComponent from '@/components/activity/AuditApplyComponent'
+
+// 审核社团的操作
+export default function AuditActivityApplyList() {
   // 通知
   const [messageApi, contextHolder] = message.useMessage()
   // table
   const [dataSource, setDataSource] = useState([])
-  // 获取链接数据
-  const params = useParams()
   useEffect(() => {
-    http.post('/activity/clubApplyActivityAll', toHump(params)).then((res) => {
+    http.post('/activity/applyActivityAll').then((res) => {
       setDataSource(res.data.data)
     })
-  }, [params])
+  }, [])
   const columns = [
     {
       title: '活动名称',
@@ -72,73 +70,84 @@ export default function ApplyActivityList() {
       render: (item) => (
         <div>
           {item['apply_state'] === 0 && (
-            <Button danger shape="round" onClick={() => confirmMethod(item)}>
-              撤销
-            </Button>
-          )}
-          {item['apply_state'] === 1 && item['activity_state'] === 0 && (
-            <Button danger shape="round" onClick={() => publishClub(item)}>
-              发布
-            </Button>
+            <>
+              <Button type="primary" onClick={() => handleState(item, 1)}>
+                通过
+              </Button>
+              <Button danger onClick={() => handleState(item, 2)}>
+                驳回
+              </Button>
+            </>
           )}
         </div>
       ),
     },
   ]
-  // 撤销活动的确认框
-  const confirmMethod = (item) => {
-    confirm({
-      title: '你确认撤销吗?',
-      icon: MyIcon('ExclamationCircleFilled'),
-      okText: '撤销',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk() {
-        deleteMothed(item)
-      },
-      onCancel() {
-        console.log('Cancel')
-      },
-    })
+  // 处理状态
+  const handleState = (item, state) => {
+    setApplyState(state)
+    setAuditOpen(true)
+    auditForm.setFieldsValue(item)
   }
-  // 撤销申请活动操作
-  const deleteMothed = (item) => {
-    // 当前页面同步状态+后端同步
-    http.post('/activity/deleteApplyActivity', toHump(item)).then((res) => {
-      messageApi.success(res.data.msg)
-      setDataSource(dataSource.filter((data) => data['activity_id'] !== item['activity_id']))
-    })
-  }
-  // 发布活动
-  const publishClub = (item) => {
-    confirm({
-      title: '你确认发布吗?',
-      icon: MyIcon('ExclamationCircleFilled'),
-      okText: '确认',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk() {
-        item['activity_state'] = 1
-        http.post('/activity/releaseActivity', toHump(item)).then((res) => {
-          messageApi.success(res.data.msg)
+  // 审核状态
+  const [applyState, setApplyState] = useState(0)
+  const [auditForm] = Form.useForm()
+  // 回复内容弹出框
+  const [auditOpen, setAuditOpen] = useState(false)
+
+  // 审核社团
+  const handleAudit = () => {
+    auditForm
+      .validateFields()
+      .then((values) => {
+        values['apply_state'] = applyState
+        http.post('/activity/auditApplyActivity', toHump(values)).then((res) => {
+          setApplyState(0)
           setDataSource(
-            dataSource.map((data) => {
-              if (data['apply_id'] === item['apply_id']) {
-                data['activity_state'] = 1
+            dataSource.map((item) => {
+              if (item['apply_id'] === values['apply_id']) {
+                item['apply_state'] = values['apply_state']
               }
-              return data
+              return item
             })
           )
+          setAuditOpen(false)
+          auditForm.resetFields()
+          if (res.data.code === 200) {
+            messageApi.success(res.data.msg)
+          } else {
+            messageApi.error(res.data.msg)
+          }
         })
-      },
-      onCancel() {
-        console.log('Cancel')
-      },
+      })
+      .catch((info) => {
+        console.log('Validate Failed:', info)
+      })
+  }
+  // 搜索
+  const onSearch = (value) => {
+    let href = '/activity/searchApplyActivity'
+    if (value === '') {
+      href = '/activity/applyActivityAll'
+    }
+    http.post(href, { keywords: value }).then((res) => {
+      setDataSource(res.data.data)
     })
   }
   return (
     <div>
       {contextHolder}
+      <div id="user_top">
+        <div></div>
+        <Input.Search
+          className="user_search"
+          placeholder="活动名称 申请者 电话"
+          allowClear
+          enterButton="Search"
+          size="large"
+          onSearch={onSearch}
+        />
+      </div>
       <Table
         id="table-antn-menu"
         columns={columns}
@@ -176,6 +185,19 @@ export default function ApplyActivityList() {
         }}
         dataSource={dataSource}
       />
+      <Modal
+        open={auditOpen}
+        title="审核活动申请"
+        okText="确认"
+        cancelText="取消"
+        onCancel={() => {
+          setAuditOpen(false)
+          setApplyState(0)
+          auditForm.resetFields()
+        }}
+        onOk={() => handleAudit()}>
+        <AuditApplyComponent form={auditForm} />
+      </Modal>
     </div>
   )
 }
