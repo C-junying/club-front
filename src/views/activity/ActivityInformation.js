@@ -26,7 +26,7 @@ export default function ActivityInformation() {
       {applyActivityInfo && (
         <div>
           <Descriptions size="small" column={3} bordered>
-            <Descriptions.Item label="活动负责人" style={{ width: 140 }}>
+            <Descriptions.Item label="活动负责人" style={{ width: 200 }}>
               {applyActivityInfo['user_name']}
             </Descriptions.Item>
             <Descriptions.Item label="活动名称">{applyActivityInfo['activity_title']}</Descriptions.Item>
@@ -79,6 +79,22 @@ export default function ActivityInformation() {
                 <div
                   dangerouslySetInnerHTML={{
                     __html: applyActivityInfo['activity_content'],
+                  }}
+                  style={{
+                    margin: '0 24px',
+                  }}></div>
+              }
+            </Descriptions.Item>
+            <Descriptions.Item
+              label="活动总结"
+              span={3}
+              style={{
+                display: applyActivityInfo['activity_state'] === 2 ? '' : 'none',
+              }}>
+              {
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: applyActivityInfo['activity_report'],
                   }}
                   style={{
                     margin: '0 24px',

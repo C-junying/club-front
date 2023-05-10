@@ -25,6 +25,8 @@ export default function MyClubIntro() {
       }
     })
   }, [params])
+  // 社团信息
+  const [clubInfo, setClubInfo] = useState({})
   const items = [
     {
       label: '社团信息',
@@ -47,7 +49,10 @@ export default function MyClubIntro() {
       icon: MyIcon('SolutionOutlined'),
     },
   ]
-  if (myUser['bear_name'] === '社长' || myUser['bear_name'] === '副社长' || manage.userId === '000000') {
+  if (
+    (myUser['bear_name'] === '社长' || myUser['bear_name'] === '副社长' || manage.userId === '000000') &&
+    clubInfo.state !== 2
+  ) {
     items.push(
       {
         label: '申请活动',
@@ -61,13 +66,15 @@ export default function MyClubIntro() {
       }
     )
   }
+  if ((myUser['bear_name'] === '社长' || manage.userId === '000000') && clubInfo.state !== 2) {
+    items.push({
+      label: '申请资金',
+      key: 'apply-money',
+      icon: MyIcon('MoneyCollectOutlined'),
+    })
+  }
   if (myUser['bear_name'] === '社长' || manage.userId === '000000') {
     items.push(
-      {
-        label: '申请资金',
-        key: 'apply-money',
-        icon: MyIcon('MoneyCollectOutlined'),
-      },
       {
         label: '费用清单',
         key: 'cost-list',
@@ -92,19 +99,20 @@ export default function MyClubIntro() {
     setCurrent(currentPath[currentPath.length - 1])
   }, [location.pathname])
 
-  // 顶部菜单点击响应
-  const onClick = (e) => {
-    setCurrent(e.key)
-    navigate(e.key, { state: myUser, replace: true })
-  }
   // 社团名称
   const [title, setTitle] = useState('我的社团')
   useEffect(() => {
     http.post('/club/clubIdClub', params).then((res) => {
       setTitle(res.data.data[0]['club_name'])
+      setClubInfo(res.data.data[0])
     })
   }, [params])
 
+  // 顶部菜单点击响应
+  const onClick = (e) => {
+    setCurrent(e.key)
+    navigate(e.key, { state: { myUser, clubInfo }, replace: true })
+  }
   return (
     <>
       <HeanderTitle title={title} onBack={() => navigate(-2)} />

@@ -17,13 +17,16 @@ export default function ClubMember() {
   const [dataSource, setDataSource] = useState([])
   // 当前用户
   const [myUser, setMyUser] = useState({})
+  // 社团信息
+  const [clubInfo, setClubInfo] = useState({})
   //   获取链接数据
   const params = useParams()
   const location = useLocation()
   useEffect(() => {
     // 获取当前用户的信息
     // 获取传来的数据
-    setMyUser(location.state)
+    setMyUser(location.state.myUser)
+    setClubInfo(location.state.clubInfo)
   }, [location])
   useEffect(() => {
     http.post('/club/getClubMember', toHump(params)).then((res) => {
@@ -75,8 +78,9 @@ export default function ClubMember() {
             onClick={() => confirmMethod(item)}
             hidden={
               (myUser['bear_name'] === '社长' ? false : true) ||
-              (item['bear_name'] === '指导老师' ? true : false) ||
-              (item['bear_name'] === '社长' ? true : false)
+              item['bear_name'] === '指导老师' ||
+              item['bear_name'] === '社长' ||
+              clubInfo.state === 2
             }
           />
           <Button
@@ -89,8 +93,9 @@ export default function ClubMember() {
             }}
             hidden={
               (myUser['bear_name'] === '社长' ? false : true) ||
-              (item['bear_name'] === '指导老师' ? true : false) ||
-              (item['bear_name'] === '社长' ? true : false)
+              item['bear_name'] === '指导老师' ||
+              item['bear_name'] === '社长' ||
+              clubInfo.state === 2
             }
           />
         </div>
@@ -189,7 +194,7 @@ export default function ClubMember() {
             type="primary"
             shape="round"
             onClick={() => setMemberOpen(true)}
-            hidden={myUser['bear_name'] === '社长' ? false : true}>
+            hidden={(myUser['bear_name'] === '社长' ? false : true) || clubInfo.state === 2}>
             添加成员
           </Button>
         </div>

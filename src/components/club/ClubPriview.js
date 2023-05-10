@@ -48,7 +48,7 @@ export default function ClubPriview() {
             <Descriptions.Item label="社团类型" span={applyClubInfo['state'] === 0 ? 2 : 1}>
               {applyClubInfo['type_name']}
             </Descriptions.Item>
-            {applyClubInfo['state'] === 1 && (
+            {applyClubInfo['state'] >= 1 && (
               <Descriptions.Item label="社团金额" span={1}>
                 {applyClubInfo['money']}
               </Descriptions.Item>

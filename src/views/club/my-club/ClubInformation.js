@@ -10,6 +10,7 @@ export default function ClubInformation() {
   const params = useParams()
   // user
   const [myUser, setMyUser] = useState({})
+
   const auditList = [
     <Tag color="processing">审核中</Tag>,
     <Tag color="success">已通过</Tag>,
@@ -40,13 +41,15 @@ export default function ClubInformation() {
   }, [params])
   return (
     <div>
-      <Button
-        type="primary"
-        shape="round"
-        style={{ marginBottom: 5 }}
-        hidden={myUser['bear_name'] === '社长' ? false : true}>
-        <NavLink to={`update`}>更新社团信息</NavLink>
-      </Button>
+      {applyClubInfo && (
+        <Button
+          type="primary"
+          shape="round"
+          style={{ marginBottom: 5 }}
+          hidden={applyClubInfo.state === 2 || (myUser['bear_name'] === '社长' ? false : true)}>
+          <NavLink to={`update`}>更新社团信息</NavLink>
+        </Button>
+      )}
       {applyClubInfo && (
         <div>
           <Descriptions size="small" column={3} bordered>
@@ -60,7 +63,7 @@ export default function ClubInformation() {
             <Descriptions.Item label="社团类型" span={applyClubInfo['state'] === 0 ? 2 : 1}>
               {applyClubInfo['type_name']}
             </Descriptions.Item>
-            {applyClubInfo['state'] === 1 && (
+            {applyClubInfo['state'] >= 1 && (
               <Descriptions.Item label="社团金额" span={1}>
                 {applyClubInfo['money']}
               </Descriptions.Item>

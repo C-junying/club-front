@@ -48,11 +48,11 @@ export function LoginComponent(props) {
           maxLength={61}
         />
       </Form.Item>
-      <Form.Item style={{ textAlign: 'end' }}>
+      {/* <Form.Item style={{ textAlign: 'end' }}>
         <a className="login-form-forgot" href="#123">
           忘记密码
         </a>
-      </Form.Item>
+      </Form.Item> */}
       <Form.Item>
         <Button type="primary" htmlType="submit" size="large" block className="login-form-button">
           登录

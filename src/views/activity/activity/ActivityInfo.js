@@ -7,12 +7,7 @@ import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
 export default function ActivityInfo() {
   //   获取链接数据
   const params = useParams()
-  const [manage, setManage] = useState({})
-  useEffect(() => {
-    http.post('/users/getToken').then((res) => {
-      setManage(res.data.data)
-    })
-  }, [])
+
   // 当前用户数据
   // user
   const [myUser, setMyUser] = useState({})
@@ -25,6 +20,7 @@ export default function ActivityInfo() {
       }
     })
   }, [params])
+
   const items = [
     {
       label: '活动信息',
@@ -42,7 +38,7 @@ export default function ActivityInfo() {
       icon: MyIcon('AppstoreOutlined'),
     },
   ]
-  if (myUser['bear_name'] === '活动负责人' || manage.userId === '000000') {
+  if (myUser['bear_name'] === '活动负责人') {
     items.push({
       label: '活动总结',
       key: 'report',
@@ -61,19 +57,20 @@ export default function ActivityInfo() {
     const currentPath = location.pathname.split('/')
     setCurrent(currentPath[currentPath.length - 1])
   }, [location.pathname])
-
+  // 社团名称
+  const [title, setTitle] = useState('')
+  const [activityInfo, setActivityInfo] = useState({})
+  useEffect(() => {
+    http.post('/activity/activityIdInfo', params).then((res) => {
+      setTitle(res.data.data[0]['activity_title'])
+      setActivityInfo(res.data.data[0])
+    })
+  }, [params])
   // 顶部菜单点击响应
   const onClick = (e) => {
     setCurrent(e.key)
-    navigate(e.key, { state: myUser, replace: true })
+    navigate(e.key, { state: { activityInfo, myUser }, replace: true })
   }
-  // 社团名称
-  const [title, setTitle] = useState('')
-  useEffect(() => {
-    http.post('/activity/activityIdClub', params).then((res) => {
-      setTitle(res.data.data[0]['activity_title'])
-    })
-  }, [params])
 
   return (
     <>

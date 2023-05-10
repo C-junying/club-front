@@ -18,6 +18,8 @@ export default function ClubReport() {
   const [dataSource, setDataSource] = useState([])
   // user
   const [myUser, setMyUser] = useState({})
+  // 社团信息
+  const [clubInfo, setClubInfo] = useState({})
   useEffect(() => {
     http.post('/club/clubIdReportAll', toHump(params)).then((res) => {
       setDataSource(res.data.data)
@@ -26,7 +28,8 @@ export default function ClubReport() {
   useEffect(() => {
     // 获取当前用户的信息
     // 获取传来的数据
-    setMyUser(location.state)
+    setMyUser(location.state.myUser)
+    setClubInfo(location.state.clubInfo)
   }, [location])
   const columns = [
     {
@@ -81,8 +84,9 @@ export default function ClubReport() {
           icon={MyIcon('DeleteOutlined')}
           onClick={() => confirmMethod(item)}
           hidden={
-            (myUser['bear_name'] === '社长' ? false : true) &&
-            (myUser['bear_name'] === '副社长' ? false : true)
+            ((myUser['bear_name'] === '社长' ? false : true) &&
+              (myUser['bear_name'] === '副社长' ? false : true)) ||
+            clubInfo.state === 2
           }
         />
       ),
@@ -122,7 +126,9 @@ export default function ClubReport() {
         shape="round"
         style={{ marginBottom: 5 }}
         hidden={
-          (myUser['bear_name'] === '社长' ? false : true) && (myUser['bear_name'] === '副社长' ? false : true)
+          ((myUser['bear_name'] === '社长' ? false : true) &&
+            (myUser['bear_name'] === '副社长' ? false : true)) ||
+          clubInfo.state === 2
         }>
         <NavLink to={`${myUser.userId}`}>添加报告</NavLink>
       </Button>

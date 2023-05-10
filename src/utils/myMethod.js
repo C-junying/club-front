@@ -11,4 +11,15 @@ function group(array, subGroupLength) {
   }
   return newArray
 }
-export { group }
+function flatten(arr) {
+  var res = []
+  for (var i = 0; i < arr.length; i++) {
+    if (Array.isArray(arr[i])) {
+      res = res.concat(flatten(arr[i]))
+    } else {
+      res.push(arr[i])
+    }
+  }
+  return res
+}
+export { group, flatten }
