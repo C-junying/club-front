@@ -25,7 +25,7 @@ import MyClubIntro from '@/views/club/my-club/MyClubIntro'
 import ClubInformation from '@/views/club/my-club/ClubInformation'
 import ClubMember from '@/views/club/my-club/ClubMember'
 import ClubReport from '@/views/club/my-club/ClubReport'
-import ClubActivity from '@/views/club/my-club/ClubActivity'
+import ClubActivity from '@/views/club/activity-apply/ClubActivityList'
 import AddClubReport from '@/components/club/AddClubReport'
 import ClubReportPreview from '@/components/club/ClubReportPreview'
 import UpdateClub from '@/components/club/UpdateClub'
@@ -38,6 +38,11 @@ import CostList from '@/views/cost/CostList'
 import ClubCostList from '@/views/club/my-club/ClubCostList'
 import ActivityPriview from '@/components/activity/ActivityPriview'
 import AuditActivityApplyList from '../views/activity/activity-apply/AuditActivityApplyList'
+import ActivityInfo from '../views/activity/activity/ActivityInfo'
+import ActivityInformation from '../views/activity/ActivityInformation'
+import ActivityMember from '../views/activity/ActivityMember'
+import ActivityStage from '../views/activity/ActivityStage'
+import ActivityReport from '../views/activity/ActivityReport'
 
 // const LazyLoad = (path) => { //传入在view 下的路径
 //   const Comp = React.lazy(() => import(`../view${path}`))
@@ -200,6 +205,32 @@ export default function IndexRouter() {
         {
           path: 'list',
           element: <ActivityList />,
+        },
+        {
+          path: 'list/:activityId/intro',
+          element: <ActivityInfo />,
+          children: [
+            {
+              path: '',
+              element: <Navigate to="information" />,
+            },
+            {
+              path: 'information',
+              element: <ActivityInformation />,
+            },
+            {
+              path: 'member',
+              element: <ActivityMember />,
+            },
+            {
+              path: 'activity-stage',
+              element: <ActivityStage />,
+            },
+            {
+              path: 'report',
+              element: <ActivityReport />,
+            },
+          ],
         },
         {
           path: 'activity-type/list',

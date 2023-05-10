@@ -1,22 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { Descriptions, Tag, Image } from 'antd'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { http } from '@/utils/http'
 import { dateFormat } from '@/utils/time'
-import HeanderTitle from '../other/HeanderTitle'
-
-export default function ActivityPriview() {
-  // 返回上一层
-  const navigate = useNavigate()
+export default function ActivityInformation() {
   const [applyActivityInfo, setApplyActivityInfo] = useState(null)
   const [teacherInfo, setTeacherInfo] = useState(null)
   //   获取链接数据
   const params = useParams()
-  const auditList = [
-    <Tag color="processing">审核中</Tag>,
-    <Tag color="success">已通过</Tag>,
-    <Tag color="error">未通过</Tag>,
-  ]
   const activityStateList = [
     <Tag color="processing">未发布</Tag>,
     <Tag color="success">已发布</Tag>,
@@ -34,27 +25,23 @@ export default function ActivityPriview() {
     <div>
       {applyActivityInfo && (
         <div>
-          <HeanderTitle onBack={() => navigate(-1)} title={applyActivityInfo.name} />
           <Descriptions size="small" column={3} bordered>
-            <Descriptions.Item label="申请者" style={{ width: 140 }}>
+            <Descriptions.Item label="活动负责人" style={{ width: 140 }}>
               {applyActivityInfo['user_name']}
             </Descriptions.Item>
-            <Descriptions.Item label="社团名称">{applyActivityInfo['club_name']}</Descriptions.Item>
             <Descriptions.Item label="活动名称">{applyActivityInfo['activity_title']}</Descriptions.Item>
-            <Descriptions.Item label="申请时间">
-              {dateFormat(applyActivityInfo['apply_time'])}
+            <Descriptions.Item label="活动来源">{applyActivityInfo['club_name']}</Descriptions.Item>
+            <Descriptions.Item label="发布时间">
+              {dateFormat(applyActivityInfo['release_time'])}
             </Descriptions.Item>
-            <Descriptions.Item label="申请理由">{applyActivityInfo['apply_content']}</Descriptions.Item>
-            <Descriptions.Item label="申请场地">{applyActivityInfo['area_name']}</Descriptions.Item>
-            <Descriptions.Item label="审核状态">
-              {auditList[applyActivityInfo['apply_state']]}
-            </Descriptions.Item>
+            <Descriptions.Item label="使用场地">{applyActivityInfo['area_name']}</Descriptions.Item>
+
             <Descriptions.Item label="发布状态">
               {activityStateList[applyActivityInfo['activity_state']]}
             </Descriptions.Item>
             <Descriptions.Item label="活动类型">{applyActivityInfo['type_name']}</Descriptions.Item>
 
-            <Descriptions.Item label="申请金额" span={3}>
+            <Descriptions.Item label="举办资金" span={2}>
               {applyActivityInfo['money']}
             </Descriptions.Item>
 
@@ -97,12 +84,6 @@ export default function ActivityPriview() {
                     margin: '0 24px',
                   }}></div>
               }
-            </Descriptions.Item>
-            <Descriptions.Item label="回复内容" span={3}>
-              {applyActivityInfo.reply}
-            </Descriptions.Item>
-            <Descriptions.Item label="回复时间">
-              {applyActivityInfo['reply_time'] && dateFormat(applyActivityInfo['reply_time'])}
             </Descriptions.Item>
           </Descriptions>
         </div>

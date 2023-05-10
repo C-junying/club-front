@@ -12,10 +12,11 @@ export default function ClubCostList() {
   const [dataSource, setDataSource] = useState([])
   // 获取链接数据
   const params = useParams()
-
   useEffect(() => {
     http.post('/cost/getClubCost', toHump(params)).then((res) => {
-      setDataSource(res.data.data)
+      http.post('/cost/getPayName', res.data.data).then((temp) => {
+        setDataSource(temp.data.data)
+      })
     })
   }, [params])
   const columns = [
@@ -37,16 +38,15 @@ export default function ClubCostList() {
       dataIndex: 'user_name',
       key: 'user_name',
     },
-
+    {
+      title: '资金去向',
+      dataIndex: 'pay_name',
+      key: 'pay_name',
+    },
     {
       title: '资金',
       dataIndex: 'total',
       key: 'total',
-    },
-    {
-      title: '资金流向',
-      dataIndex: 'pay_name',
-      key: 'pay_name',
     },
     {
       title: '支付状态',
