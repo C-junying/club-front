@@ -89,8 +89,12 @@ export default function ClubInformation() {
         <div>
           <Descriptions size="small" column={3} bordered>
             <Descriptions.Item label="社长">{applyClubInfo['user_name']}</Descriptions.Item>
-            <Descriptions.Item label="社团名称">{applyClubInfo['club_name']}</Descriptions.Item>
-            <Descriptions.Item label="创建时间">{dateFormat(applyClubInfo['apply_time'])}</Descriptions.Item>
+            <Descriptions.Item label="社团名称" style={{ width: 180 }}>
+              {applyClubInfo['club_name']}
+            </Descriptions.Item>
+            <Descriptions.Item label="创建时间" style={{ width: 180 }}>
+              {dateFormat(applyClubInfo['apply_time'])}
+            </Descriptions.Item>
             <Descriptions.Item label="申请理由">{applyClubInfo['apply_content']}</Descriptions.Item>
             <Descriptions.Item label="社团场地">{applyClubInfo['area_name']}</Descriptions.Item>
             <Descriptions.Item label="审核状态">{auditList[applyClubInfo['apply_state']]}</Descriptions.Item>

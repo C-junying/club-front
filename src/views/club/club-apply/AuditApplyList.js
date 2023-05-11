@@ -146,7 +146,7 @@ export default function AuditApplyList() {
           className="user_search"
           placeholder="社团名称 申请者 电话"
           allowClear
-          enterButton="Search"
+          enterButton="查询"
           size="large"
           onSearch={onSearch}
         />

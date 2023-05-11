@@ -115,7 +115,6 @@ export default function ClubApplyList() {
     confirm({
       title: '你确认发布吗?',
       icon: MyIcon('ExclamationCircleFilled'),
-      content: 'Some descriptions',
       okText: '确认',
       okType: 'danger',
       cancelText: '取消',

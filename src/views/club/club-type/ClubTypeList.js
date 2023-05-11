@@ -168,9 +168,9 @@ export default function ClubTypeList() {
         </Button>
         <Search
           className="user_search"
-          placeholder="名称 备注"
+          placeholder="名称 介绍"
           allowClear
-          enterButton="Search"
+          enterButton="查询"
           size="large"
           onSearch={onSearch}
         />

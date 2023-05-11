@@ -97,7 +97,6 @@ export default function ClubReport() {
     confirm({
       title: '你确认删除吗?',
       icon: MyIcon('ExclamationCircleFilled'),
-      content: 'Some descriptions',
       okText: '删除',
       okType: 'danger',
       cancelText: '取消',
@@ -130,7 +129,7 @@ export default function ClubReport() {
             (myUser['bear_name'] === '副社长' ? false : true)) ||
           clubInfo.state === 2
         }>
-        <NavLink to={`${myUser.userId}`}>添加报告</NavLink>
+        <NavLink to={`${myUser['user_id']}`}>添加报告</NavLink>
       </Button>
       <Table
         id="table-antn-menu"

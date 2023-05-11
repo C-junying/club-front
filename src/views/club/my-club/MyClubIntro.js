@@ -28,7 +28,7 @@ export default function MyClubIntro() {
   // 社团信息
   const [clubInfo, setClubInfo] = useState({})
   const items = []
-  if (JSON.stringify(myUser) === '{}') {
+  if (JSON.stringify(myUser) === '{}' && manage.userId !== '000000') {
     items.push({
       label: '社团信息',
       key: 'information',

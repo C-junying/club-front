@@ -106,7 +106,6 @@ export default function ClubMember() {
     confirm({
       title: '你确认删除吗?',
       icon: MyIcon('ExclamationCircleFilled'),
-      content: 'Some descriptions',
       okText: '删除',
       okType: 'danger',
       cancelText: '取消',
@@ -202,7 +201,7 @@ export default function ClubMember() {
           className="user_search"
           placeholder="姓名 电话"
           allowClear
-          enterButton="Search"
+          enterButton="查询"
           size="large"
           onSearch={onSearch}
         />

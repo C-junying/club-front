@@ -87,7 +87,7 @@ export default function AddClubReport() {
   return (
     <>
       {contextHolder}
-      <HeanderTitle title="社团报告" onBack={() => navigate(-1)} />
+      <HeanderTitle title="添加学期报告" onBack={() => navigate(-1)} />
       <Form
         form={form}
         layout="vertical"

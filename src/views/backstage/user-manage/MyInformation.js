@@ -50,6 +50,7 @@ export default function MyInformation() {
   const submitForm = () => {
     form.validateFields().then((values) => {
       values['user_id'] = userId
+      values.sex = !!values.sex ? '男' : '女'
       http.post('/users/updateCurrentUser', toHump(values)).then((res) => {
         if (res.data.code === 200) {
           messageApi.success(res.data.msg)

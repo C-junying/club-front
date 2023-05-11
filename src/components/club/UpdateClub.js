@@ -88,7 +88,7 @@ export default function UpdateClub() {
   return (
     <>
       {contextHolder}
-      <HeanderTitle title="社团报告" onBack={() => navigate(-1)} />
+      <HeanderTitle title="社团维护" onBack={() => navigate(-1)} />
       <Form
         form={form}
         layout="vertical"
