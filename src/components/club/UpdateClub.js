@@ -131,7 +131,7 @@ export default function UpdateClub() {
           ]}>
           <Input.TextArea showCount maxLength={130} />
         </Form.Item>
-        <Form.Item name="picture" label="社团logo" valuePropName="picture" noStyle>
+        <Form.Item name="picture" label="社团logo" valuePropName="picture">
           <MyUpload
             name="社团logo"
             imageUrl={imageUrl}

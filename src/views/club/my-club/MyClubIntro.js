@@ -27,28 +27,37 @@ export default function MyClubIntro() {
   }, [params])
   // 社团信息
   const [clubInfo, setClubInfo] = useState({})
-  const items = [
-    {
+  const items = []
+  if (JSON.stringify(myUser) === '{}') {
+    items.push({
       label: '社团信息',
       key: 'information',
       icon: MyIcon('HomeOutlined'),
-    },
-    {
-      label: '社团成员',
-      key: 'member',
-      icon: MyIcon('UserOutlined'),
-    },
-    {
-      label: '社团活动',
-      key: 'activity',
-      icon: MyIcon('AppstoreOutlined'),
-    },
-    {
-      label: '社团学期报告',
-      key: 'report',
-      icon: MyIcon('SolutionOutlined'),
-    },
-  ]
+    })
+  } else {
+    items.push(
+      {
+        label: '社团信息',
+        key: 'information',
+        icon: MyIcon('HomeOutlined'),
+      },
+      {
+        label: '社团成员',
+        key: 'member',
+        icon: MyIcon('UserOutlined'),
+      },
+      {
+        label: '社团活动',
+        key: 'activity',
+        icon: MyIcon('AppstoreOutlined'),
+      },
+      {
+        label: '社团学期报告',
+        key: 'report',
+        icon: MyIcon('SolutionOutlined'),
+      }
+    )
+  }
   if (
     (myUser['bear_name'] === '社长' || myUser['bear_name'] === '副社长' || manage.userId === '000000') &&
     clubInfo.state !== 2

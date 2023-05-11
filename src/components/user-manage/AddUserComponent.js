@@ -99,7 +99,7 @@ export default function AddUserComponent(props) {
       <Form.Item name="intro" label="介绍">
         <Input.TextArea showCount maxLength={130} />
       </Form.Item>
-      <Form.Item name="picture" label="头像" valuePropName="picture" noStyle>
+      <Form.Item name="picture" label="头像" valuePropName="picture">
         <MyUpload
           name="头像"
           imageUrl={imageUrl}

@@ -134,7 +134,7 @@ export default function ClubApplyComponent(props) {
           options={teacherList}
         />
       </Form.Item>
-      <Form.Item name="picture" label="背景图" valuePropName="picture" noStyle>
+      <Form.Item name="picture" label="背景图" valuePropName="picture">
         <MyUpload
           name="背景图"
           imageUrl={imageUrl}

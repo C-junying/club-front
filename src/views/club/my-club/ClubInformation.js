@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { Descriptions, Tag, Image, Button } from 'antd'
+import { Descriptions, Tag, Image, Button, Modal } from 'antd'
 import { NavLink, useParams } from 'react-router-dom'
 import { http } from '@/utils/http'
+import { MyIcon } from '@/utils/MyIcon'
 import { dateFormat } from '@/utils/time'
+
+const { confirm } = Modal
+// 社团信息
 export default function ClubInformation() {
   const [applyClubInfo, setApplyClubInfo] = useState(null)
   const [teacherInfo, setTeacherInfo] = useState(null)
@@ -39,6 +43,27 @@ export default function ClubInformation() {
       }
     })
   }, [params])
+
+  // 加入社团
+  const addMember = () => {
+    confirm({
+      title: '你确认加入吗?',
+      icon: MyIcon('ExclamationCircleFilled'),
+      okText: '加入',
+      cancelText: '取消',
+      onOk() {
+        http.post('/club/userJoinMember', params).then((res) => {
+          alert(res.data.msg)
+          setTimeout(() => {
+            window.location.reload()
+          }, 1000)
+        })
+      },
+      onCancel() {
+        console.log('Cancel')
+      },
+    })
+  }
   return (
     <div>
       {applyClubInfo && (
@@ -48,6 +73,16 @@ export default function ClubInformation() {
           style={{ marginBottom: 5 }}
           hidden={applyClubInfo.state === 2 || (myUser['bear_name'] === '社长' ? false : true)}>
           <NavLink to={`update`}>更新社团信息</NavLink>
+        </Button>
+      )}
+      {applyClubInfo && (
+        <Button
+          type="primary"
+          shape="round"
+          style={{ marginBottom: 5 }}
+          hidden={applyClubInfo.state === 2 || (JSON.stringify(myUser) === '{}' ? false : true)}
+          onClick={addMember}>
+          加入社团
         </Button>
       )}
       {applyClubInfo && (

@@ -296,9 +296,7 @@ export default function UserList() {
                 console.log(res.data)
                 setPasswordOpen(false)
                 passwordForm.resetFields()
-                setTimeout(() => {
-                  messageApi.success(res.data.msg)
-                }, 1000)
+                messageApi.success(res.data.msg)
               })
             })
             .catch((info) => {

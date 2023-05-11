@@ -20,24 +20,32 @@ export default function ActivityInfo() {
       }
     })
   }, [params])
-
-  const items = [
-    {
+  const items = []
+  if (JSON.stringify(myUser) === '{}') {
+    items.push({
       label: '活动信息',
       key: 'information',
       icon: MyIcon('HomeOutlined'),
-    },
-    {
-      label: '活动成员',
-      key: 'member',
-      icon: MyIcon('UserOutlined'),
-    },
-    {
-      label: '活动阶段',
-      key: 'activity-stage',
-      icon: MyIcon('AppstoreOutlined'),
-    },
-  ]
+    })
+  } else {
+    items.push(
+      {
+        label: '活动信息',
+        key: 'information',
+        icon: MyIcon('HomeOutlined'),
+      },
+      {
+        label: '活动成员',
+        key: 'member',
+        icon: MyIcon('UserOutlined'),
+      },
+      {
+        label: '活动阶段',
+        key: 'activity-stage',
+        icon: MyIcon('AppstoreOutlined'),
+      }
+    )
+  }
   if (myUser['bear_name'] === '活动负责人') {
     items.push({
       label: '活动总结',

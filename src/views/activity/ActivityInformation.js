@@ -1,13 +1,28 @@
 import React, { useEffect, useState } from 'react'
-import { Descriptions, Tag, Image } from 'antd'
+import { Descriptions, Tag, Image, Button, Modal } from 'antd'
 import { useParams } from 'react-router-dom'
 import { http } from '@/utils/http'
 import { dateFormat } from '@/utils/time'
+import { MyIcon } from '@/utils/MyIcon'
+
+const { confirm } = Modal
+// 活动信息
 export default function ActivityInformation() {
   const [applyActivityInfo, setApplyActivityInfo] = useState(null)
   const [teacherInfo, setTeacherInfo] = useState(null)
   //   获取链接数据
   const params = useParams()
+  // 当前用户
+  const [myUser, setMyUser] = useState({})
+  useEffect(() => {
+    http.post('/activity/activityIdUserIdToBearName', params).then((res) => {
+      if (res.data.data.member.length > 0) {
+        setMyUser(res.data.data.member[0])
+      } else if (res.data.data.taecher.length > 0) {
+        setMyUser(res.data.data.taecher[0])
+      }
+    })
+  }, [params])
   const activityStateList = [
     <Tag color="processing">未发布</Tag>,
     <Tag color="success">已发布</Tag>,
@@ -21,8 +36,40 @@ export default function ActivityInformation() {
       })
     })
   }, [params])
+  // 参加活动
+  const addMember = () => {
+    confirm({
+      title: '你确认参加吗?',
+      icon: MyIcon('ExclamationCircleFilled'),
+      okText: '参加',
+      cancelText: '取消',
+      onOk() {
+        http.post('/activity/userJoinMember', params).then((res) => {
+          alert(res.data.msg)
+          setTimeout(() => {
+            window.location.reload()
+          }, 1000)
+        })
+      },
+      onCancel() {
+        console.log('Cancel')
+      },
+    })
+  }
   return (
     <div>
+      {applyActivityInfo && (
+        <Button
+          type="primary"
+          shape="round"
+          style={{ marginBottom: 5 }}
+          hidden={
+            applyActivityInfo['activity_state'] === 2 || (JSON.stringify(myUser) === '{}' ? false : true)
+          }
+          onClick={addMember}>
+          参加活动
+        </Button>
+      )}
       {applyActivityInfo && (
         <div>
           <Descriptions size="small" column={3} bordered>

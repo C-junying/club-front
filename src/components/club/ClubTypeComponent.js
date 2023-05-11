@@ -43,7 +43,7 @@ export default function ClubTypeComponent(props) {
         ]}>
         <Input placeholder="请输入类型名称" maxLength={21} />
       </Form.Item>
-      <Form.Item name="picture" label="背景图" valuePropName="picture" noStyle>
+      <Form.Item name="picture" label="背景图" valuePropName="picture">
         <MyUpload
           name="背景图"
           imageUrl={imageUrl}

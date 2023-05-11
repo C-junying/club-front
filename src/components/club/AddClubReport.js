@@ -144,7 +144,7 @@ export default function AddClubReport() {
           ]}>
           <Input.TextArea showCount maxLength={130} />
         </Form.Item>
-        <Form.Item name="picture" label="代表图" valuePropName="picture" noStyle>
+        <Form.Item name="picture" label="代表图" valuePropName="picture">
           <MyUpload
             name="代表图"
             imageUrl={imageUrl}

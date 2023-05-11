@@ -37,12 +37,13 @@ import AuditCostApplyList from '@/views/cost/AuditCostApplyList'
 import CostList from '@/views/cost/CostList'
 import ClubCostList from '@/views/club/my-club/ClubCostList'
 import ActivityPriview from '@/components/activity/ActivityPriview'
-import AuditActivityApplyList from '../views/activity/activity-apply/AuditActivityApplyList'
-import ActivityInfo from '../views/activity/activity/ActivityInfo'
-import ActivityInformation from '../views/activity/ActivityInformation'
-import ActivityMember from '../views/activity/ActivityMember'
-import ActivityStage from '../views/activity/ActivityStage'
-import ActivityReport from '../views/activity/ActivityReport'
+import AuditActivityApplyList from '@/views/activity/activity-apply/AuditActivityApplyList'
+import ActivityInfo from '@/views/activity/activity/ActivityInfo'
+import ActivityInformation from '@/views/activity/ActivityInformation'
+import ActivityMember from '@/views/activity/ActivityMember'
+import ActivityStage from '@/views/activity/ActivityStage'
+import ActivityReport from '@/views/activity/ActivityReport'
+import MyInformation from '@/views/backstage/user-manage/MyInformation'
 
 // const LazyLoad = (path) => { //传入在view 下的路径
 //   const Comp = React.lazy(() => import(`../view${path}`))
@@ -65,7 +66,8 @@ export default function IndexRouter() {
     },
     {
       path: '/',
-      element: <Index />,
+      // element: <Index />,
+      element: <Navigate to="backstage" />,
     },
     {
       path: '/backstage',
@@ -267,6 +269,16 @@ export default function IndexRouter() {
         {
           path: 'cost-list',
           element: <CostList />,
+        },
+      ],
+    },
+    {
+      path: '/my',
+      element: <AuthRouter element={<BackStage />} />,
+      children: [
+        {
+          path: 'information',
+          element: <MyInformation />,
         },
       ],
     },
