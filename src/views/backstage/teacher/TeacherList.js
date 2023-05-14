@@ -3,7 +3,6 @@ import { Button, Modal, Table, Form, Input, message } from 'antd'
 import { http } from '@/utils/http'
 import { toHump } from '@/utils/toHump'
 import { MyIcon } from '@/utils/MyIcon'
-import { dateFormat } from '@/utils/time'
 import TeacherComponent from '@/components/user-manage/TeacherComponent'
 
 const { confirm } = Modal

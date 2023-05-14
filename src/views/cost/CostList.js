@@ -4,7 +4,6 @@ import { http } from '@/utils/http'
 import { MyIcon } from '@/utils/MyIcon'
 import { dateFormat } from '@/utils/time'
 import { toHump } from '@/utils/toHump'
-import { useParams } from 'react-router-dom'
 
 // 社团费用
 export default function CostList() {
