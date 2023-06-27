@@ -1,8 +1,8 @@
-import { Card, Form, Input, Tabs } from 'antd'
-import { MyIcon } from '@/utils/MyIcon'
-import logo from '@/assets/logo.png'
-import './login.css'
-import { LoginComponent } from '@/components/login/LoginComponent'
+import { Card, Form, Input, Tabs } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import logo from '@/assets/logo.png';
+import './login.css';
+import LoginComponent from '@/components/login/LoginComponent';
 
 // 登录
 function Login() {
@@ -20,7 +20,7 @@ function Login() {
       ]}>
       <Input prefix={MyIcon('UserOutlined', 'site-form-item-icon')} size="large" placeholder="请输入手机号" />
     </Form.Item>
-  )
+  );
   const labelEmail = (
     <Form.Item
       name="email"
@@ -35,15 +35,15 @@ function Login() {
       ]}>
       <Input prefix={MyIcon('UserOutlined', 'site-form-item-icon')} size="large" placeholder="请输入邮箱" />
     </Form.Item>
-  )
+  );
   const items = [
     { key: '1', label: '手机号', children: <LoginComponent lable={lablePhone} /> },
     { key: '2', label: '邮箱', children: <LoginComponent lable={labelEmail} /> },
-  ]
+  ];
 
   const onChange = (key) => {
-    console.log(key)
-  }
+    console.log(key);
+  };
   return (
     <div className="login">
       <Card className="login-container">
@@ -51,6 +51,6 @@ function Login() {
         <Tabs defaultActiveKey="1" centered items={items} destroyInactiveTabPane onChange={onChange} />
       </Card>
     </div>
-  )
+  );
 }
-export default Login
+export default Login;

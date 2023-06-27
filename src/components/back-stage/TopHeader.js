@@ -1,66 +1,69 @@
-import { Layout, Dropdown, Avatar } from 'antd'
-import { useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
+import { Layout, Dropdown, Avatar } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
+import { MyIcon } from '@/utils/MyIcon';
 
-const { Header } = Layout
-export default function TopHeader() {
-  const navigate = useNavigate()
-  const [token, setToken] = useState({})
-  const [user, setUser] = useState({})
+const { Header } = Layout;
+function TopHeader() {
+  // store 登录信息
+  const { tokenStore } = useRootStore();
+  const navigate = useNavigate();
   useEffect(() => {
-    http.post('/users/getToken').then((res) => {
-      setToken(res.data.data)
-      http.post('/users/getUserId', { userId: res.data.data.userId }).then((res) => {
-        setUser(res.data.data)
-      })
-    })
-  }, [])
+    if (!tokenStore.checkLogin) {
+      tokenStore.updateLoginInfo();
+    }
+  }, []);
   const items = [
     {
       key: '1',
-      label: token.roleName,
+      label: tokenStore.userInfo && tokenStore.userInfo['roleName'],
     },
     {
       key: '2',
       label: '退出',
     },
-  ]
+  ];
   return (
     <Header
       style={{
         padding: '0 20',
         background: 'white',
       }}>
-      <div style={{ float: 'right' }}>
-        <span>
-          欢迎<span style={{ color: 'orange' }}>{user['user_name']}</span>回来
-        </span>
-        <Dropdown
-          menu={{
-            items,
-            onClick: ({ key }) => {
-              if (key === '2') {
-                localStorage.removeItem('token')
-                navigate('/login')
+      {tokenStore.userInfo && (
+        <div style={{ float: 'right' }}>
+          <span>
+            欢迎<span style={{ color: 'orange' }}>{tokenStore.userInfo['userName']}</span>回来
+          </span>
+          <Dropdown
+            menu={{
+              items,
+              onClick: ({ key }) => {
+                if (key === '2') {
+                  localStorage.removeItem('token');
+                  navigate('/login');
+                }
+              },
+            }}
+            placement="bottom">
+            <Avatar
+              size="large"
+              src={
+                tokenStore.userInfo.picture !== null &&
+                tokenStore.userInfo.picture !== undefined &&
+                tokenStore.userInfo.picture !== '' ? (
+                  <img src={tokenStore.userInfo.picture} alt="avatar" />
+                ) : (
+                  ''
+                )
               }
-            },
-          }}
-          placement="bottom">
-          <Avatar
-            size="large"
-            src={
-              user.picture !== null && user.picture !== undefined && user.picture !== '' ? (
-                <img src={user.picture} alt="avatar" />
-              ) : (
-                ''
-              )
-            }
-            icon={MyIcon('UserOutlined')}
-          />
-        </Dropdown>
-      </div>
+              icon={MyIcon('UserOutlined')}
+            />
+          </Dropdown>
+        </div>
+      )}
     </Header>
-  )
+  );
 }
+export default observer(TopHeader);

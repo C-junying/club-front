@@ -1,26 +1,28 @@
-import { Form, Input, Switch, message } from 'antd'
-import { http } from '@/utils/http'
-import { toHump } from '@/utils/toHump'
-import { useNavigate } from 'react-router-dom'
+import { Form, Input, Switch, message } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { useRootStore } from '@/stores/RootStore';
+
 export default function RegisterComponent(props) {
+  // store
+  const { userStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  const navigate = useNavigate()
+  const [messageApi, contextHolder] = message.useMessage();
+  const navigate = useNavigate();
   const onFinish = (values) => {
-    values.sex = !!values.sex ? '男' : '女'
-    console.log(values)
-    http.post('/users/register', toHump(values)).then((res) => {
-      console.log(res.data)
+    values.sex = !!values.sex ? '男' : '女';
+    // console.log(values)
+    userStore.addUser(values).then((res) => {
+      // console.log(res.data)
       if (res.data.code === 200) {
-        messageApi.success(res.data.msg)
+        messageApi.success(res.data.msg);
         setTimeout(() => {
-          navigate('/login')
-        }, 1000)
+          navigate('/login');
+        }, 1000);
       } else {
-        messageApi.error(res.data.msg)
+        messageApi.error(res.data.msg);
       }
-    })
-  }
+    });
+  };
   return (
     <Form layout="vertical" name="form_in_modal" validateTrigger={['onBlur', 'onChange']} onFinish={onFinish}>
       {contextHolder}
@@ -94,5 +96,5 @@ export default function RegisterComponent(props) {
       </Form.Item>
       {props.lable}
     </Form>
-  )
+  );
 }

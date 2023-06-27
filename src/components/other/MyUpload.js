@@ -1,11 +1,11 @@
-import { Upload } from 'antd'
-import { MyIcon } from '@/utils/MyIcon'
-import { baseURL } from '@/utils/http'
+import { Upload } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import { baseURL } from '@/utils/http';
 
 export default function MyUpload(props) {
   // 显示图片地址
-  const imageUrl = props.imageUrl
-  const loading = props.loading
+  const imageUrl = props.imageUrl;
+  const loading = props.loading;
   const uploadButton = (
     <div>
       {loading ? MyIcon('LoadingOutlined') : MyIcon('PlusOutlined')}
@@ -16,7 +16,7 @@ export default function MyUpload(props) {
         {props.name}
       </div>
     </div>
-  )
+  );
   return (
     <Upload
       name="file"
@@ -38,5 +38,5 @@ export default function MyUpload(props) {
         uploadButton
       )}
     </Upload>
-  )
+  );
 }

@@ -1,35 +1,33 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Form, Input, message } from 'antd'
-import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
-import { toHump } from '@/utils/toHump'
-import ClubTypeComponent from '@/components/club/ClubTypeComponent'
+import React, { useEffect, useState } from 'react';
+import { Button, Modal, Table, Form, Input, message } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import ClubTypeComponent from '@/components/club/ClubTypeComponent';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { confirm } = Modal
-const { Search } = Input
+const { confirm } = Modal;
+const { Search } = Input;
 
 // 社团类型列表
-export default function ClubTypeList() {
+function ClubTypeList() {
+  // store
+  const { clubTypeStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  // table操作
-  const [dataSource, setDataSource] = useState([])
+  const [messageApi, contextHolder] = message.useMessage();
 
   //   图片地址
-  const [imageUrl, setImageUrl] = useState('')
+  const [imageUrl, setImageUrl] = useState('');
 
   useEffect(() => {
-    http.post('/club/clubTypeAll').then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [])
+    clubTypeStore.getAllTypeList();
+  }, []);
   const columns = [
     {
       title: '社团类型名称',
       dataIndex: 'type_name',
       key: 'type_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
 
@@ -43,7 +41,7 @@ export default function ClubTypeList() {
       dataIndex: 'picture',
       key: 'picture',
       render: (pic) => {
-        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : ''
+        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : '';
       },
     },
     {
@@ -53,112 +51,102 @@ export default function ClubTypeList() {
       render: (item) => (
         <div>
           <Button danger shape="circle" icon={MyIcon('DeleteOutlined')} onClick={() => confirmMethod(item)} />
-          <Button
-            type="primary"
-            shape="circle"
-            icon={MyIcon('EditOutlined')}
-            onClick={() => handleUpdate(item)}
-          />
+          <Button type="primary" shape="circle" icon={MyIcon('EditOutlined')} onClick={() => handleUpdate(item)} />
         </div>
       ),
     },
-  ]
+  ];
   const confirmMethod = (item) => {
     confirm({
       title: '你确认删除吗?',
       icon: MyIcon('ExclamationCircleFilled'),
-      content: 'Some descriptions',
+      // content: 'Some descriptions',
       okText: '删除',
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        deleteMothed(item)
+        deleteMothed(item);
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   // 删除操作
   const deleteMothed = (item) => {
-    console.log(item)
+    // console.log(item)
     // 当前页面同步状态+后端同步
-    setDataSource(dataSource.filter((data) => data['type_id'] !== item['type_id']))
-    http.post('/club/deleteClubType', toHump(item))
-  }
+    clubTypeStore.deleteType(item).then((res) => {
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg);
+      } else {
+        messageApi.error(res.data.msg);
+      }
+    });
+  };
   // 添加社团类型弹出框
-  const [addOpen, setAddOpen] = useState(false)
-  const [addForm] = Form.useForm()
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm] = Form.useForm();
 
   const addFormOk = () => {
     addForm
       .validateFields()
       .then((values) => {
-        http.post('/club/addClubType', toHump(values)).then((res) => {
-          setAddOpen(false)
-          addForm.resetFields()
+        clubTypeStore.addType(values).then((res) => {
+          setAddOpen(false);
+          addForm.resetFields();
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
             setTimeout(() => {
-              window.location.reload()
-            }, 1000)
+              window.location.reload();
+            }, 1000);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
 
   // 更新社团类型弹出框
-  const [updateOpen, setUpdateOpen] = useState(false)
-  const [updateForm] = Form.useForm()
+  const [updateOpen, setUpdateOpen] = useState(false);
+  const [updateForm] = Form.useForm();
 
   // 弹出更新社团类型
   const handleUpdate = (item) => {
-    setUpdateOpen(true)
-    setImageUrl(item.picture)
-    updateForm.setFieldsValue(item)
-  }
+    setUpdateOpen(true);
+    setImageUrl(item.picture);
+    updateForm.setFieldsValue(item);
+  };
   const updateFormOk = () => {
     updateForm
       .validateFields()
       .then((values) => {
-        http.post('/club/updateClubType', toHump(values)).then((res) => {
-          console.log(res.data)
-          setUpdateOpen(false)
-          updateForm.resetFields()
+        clubTypeStore.updateType(values).then((res) => {
+          // console.log(res.data)
+          setUpdateOpen(false);
+          updateForm.resetFields();
           if (res.data.code === 200) {
-            setDataSource(
-              dataSource.map((item) => {
-                if (item['type_id'] === values['type_id']) {
-                  return values
-                }
-                return item
-              })
-            )
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   // 模糊查询
   const onSearch = (value) => {
-    let href = '/club/clubTypeSearch'
     if (value === '') {
-      href = '/club/clubTypeAll'
+      clubTypeStore.getAllTypeList(true);
+    } else {
+      clubTypeStore.getSearch(value);
     }
-    http.post(href, { search: value }).then((res) => {
-      setDataSource(res.data.data)
-    })
-  }
+  };
   return (
     <div>
       {contextHolder}
@@ -185,10 +173,10 @@ export default function ClubTypeList() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: clubTypeStore.typeList.length,
           showTotal: (total) => `总共：${total}个`,
         }}
-        dataSource={dataSource}
+        dataSource={clubTypeStore.typeList}
       />
       <Modal
         open={addOpen}
@@ -196,9 +184,9 @@ export default function ClubTypeList() {
         okText="添加"
         cancelText="取消"
         onCancel={() => {
-          setAddOpen(false)
-          setImageUrl('')
-          addForm.resetFields()
+          setAddOpen(false);
+          setImageUrl('');
+          addForm.resetFields();
         }}
         onOk={() => addFormOk()}>
         <ClubTypeComponent form={addForm} imageUrl={imageUrl} setImageUrl={setImageUrl} />
@@ -209,13 +197,14 @@ export default function ClubTypeList() {
         okText="更新"
         cancelText="取消"
         onCancel={() => {
-          setUpdateOpen(false)
-          setImageUrl('')
-          updateForm.resetFields()
+          setUpdateOpen(false);
+          setImageUrl('');
+          updateForm.resetFields();
         }}
         onOk={() => updateFormOk()}>
         <ClubTypeComponent form={updateForm} imageUrl={imageUrl} setImageUrl={setImageUrl} />
       </Modal>
     </div>
-  )
+  );
 }
+export default observer(ClubTypeList);

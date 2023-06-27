@@ -1,31 +1,29 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Tag, Form, message } from 'antd'
-import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
-import { toHump } from '@/utils/toHump'
-import { deleteTree } from '@/utils/menuTree'
-import AddMenu from '@/components/right-manage/AddMenu'
-import MenuTree from '@/components/right-manage/MenuTree'
+import React, { useEffect, useState } from 'react';
+import { Button, Modal, Table, Tag, Form, message } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import AddMenu from '@/components/right-manage/AddMenu';
+import MenuTree from '@/components/right-manage/MenuTree';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { confirm } = Modal
+const { confirm } = Modal;
 
 // 菜单列表
-export default function MenuList() {
+function MenuList() {
+  // store
+  const { menuStore, roleStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  const [dataSource, setDataSource] = useState([])
+  const [messageApi, contextHolder] = message.useMessage();
   useEffect(() => {
-    http.post('/menu/roleSelect').then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [])
+    menuStore.getAllMenuList();
+  }, []);
   const columns = [
     {
       title: '权限名称',
       dataIndex: 'name',
       key: 'name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -33,7 +31,7 @@ export default function MenuList() {
       dataIndex: 'href',
       key: 'href',
       render: (key) => {
-        return <Tag color="orange">{key}</Tag>
+        return <Tag color="orange">{key}</Tag>;
       },
     },
     {
@@ -46,7 +44,7 @@ export default function MenuList() {
       dataIndex: 'menu_logo',
       key: 'menu_logo',
       render: (key) => {
-        return MyIcon(key)
+        return MyIcon(key);
       },
     },
     {
@@ -56,146 +54,146 @@ export default function MenuList() {
       render: (item) => (
         <div>
           <Button danger shape="circle" icon={MyIcon('DeleteOutlined')} onClick={() => confirmMethod(item)} />
-          <Button
-            type="primary"
-            shape="circle"
-            icon={MyIcon('EditOutlined')}
-            onClick={() => handleUpdate(item)}
-          />
+          <Button type="primary" shape="circle" icon={MyIcon('EditOutlined')} onClick={() => handleUpdate(item)} />
           <Button
             type="primary"
             shape="circle"
             icon={MyIcon('UnorderedListOutlined')}
             onClick={() => {
-              console.log(item)
-              http.post('/menu/roleIdMenu', toHump(item)).then((res) => {
-                setParentOpen(true)
-                setCurrentRights(res.data.data.map((val) => val['menu_id']))
-                setCurrentMenu(item)
-              })
+              // console.log(item);
+              roleStore.showRoleRight(item).then((res) => {
+                setParentOpen(true);
+                setCurrentRights(res.data.data.map((val) => val['menu_id']));
+                setCurrentMenu(item);
+              });
             }}
           />
         </div>
       ),
     },
-  ]
+  ];
   const confirmMethod = (item) => {
     confirm({
       title: '你确认删除吗?',
       icon: MyIcon('ExclamationCircleFilled'),
-      content: 'Some descriptions',
+      // content: 'Some descriptions',
       okText: '删除',
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        deleteMothed(item)
+        deleteMothed(item);
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   // 删除操作
   const deleteMothed = (item) => {
-    console.log(item)
+    // console.log(item);
     // 当前页面同步状态+后端同步
-    setDataSource(deleteTree(dataSource, item['menu_id']))
-    http.post('/menu/deleteMenu', toHump(item))
-  }
+    menuStore.deleteMenu(item).then((res) => {
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg);
+      } else {
+        messageApi.error(res.data.msg);
+      }
+    });
+  };
   // 添加菜单弹出框
-  const [open, setOpen] = useState(false)
-  const [form] = Form.useForm()
+  const [open, setOpen] = useState(false);
+  const [form] = Form.useForm();
 
   const addFormOk = () => {
     form
       .validateFields()
       .then((values) => {
-        values['is_show'] = !!values['is_show'] ? 1 : 0
-        http.post('/menu/addMenu', toHump(values)).then((res) => {
-          console.log(res.data)
-          setOpen(false)
-          form.resetFields()
+        values['is_show'] = !!values['is_show'] ? 1 : 0;
+        menuStore.addMenu(values).then((res) => {
+          // console.log(res.data);
+          setOpen(false);
+          form.resetFields();
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
             setTimeout(() => {
-              window.location.reload()
-            }, 1000)
+              window.location.reload();
+            }, 1000);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   // 更新菜单
-  const [updateOpen, setUpdateOpen] = useState(false)
-  const [updateForm] = Form.useForm()
+  const [updateOpen, setUpdateOpen] = useState(false);
+  const [updateForm] = Form.useForm();
 
   // 弹出更新菜单
   const handleUpdate = (item) => {
-    setUpdateOpen(true)
-    updateForm.setFieldsValue(item)
-    !!item['is_show'] ? updateForm.setFieldValue('is_show', true) : updateForm.setFieldValue('is_show', false)
-  }
+    setUpdateOpen(true);
+    updateForm.setFieldsValue(item);
+    !!item['is_show'] ? updateForm.setFieldValue('is_show', true) : updateForm.setFieldValue('is_show', false);
+  };
   const updateFormOk = () => {
     updateForm
       .validateFields()
       .then((values) => {
-        values['is_show'] = !!values['is_show'] ? 1 : 0
-        http.post('/menu/updateMenu', toHump(values)).then((res) => {
-          console.log(res.data)
-          setUpdateOpen(false)
-          updateForm.resetFields()
+        values['is_show'] = !!values['is_show'] ? 1 : 0;
+        menuStore.updateMenu(values).then((res) => {
+          // console.log(res.data);
+          setUpdateOpen(false);
+          updateForm.resetFields();
           if (res.data.code === 200) {
-            setDataSource(
-              dataSource.map((item) => {
-                if (item['menu_id'] === values['menu_id']) {
-                  return values
-                }
-                return item
-              })
-            )
+            // setDataSource(
+            //   dataSource.map((item) => {
+            //     if (item['menu_id'] === values['menu_id']) {
+            //       return values;
+            //     }
+            //     return item;
+            //   })
+            // );
 
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   // 更新上级菜单
-  const [parentOpen, setParentOpen] = useState(false)
-  const [confirmLoading, setConfirmLoading] = useState(false)
-  const [currentRights, setCurrentRights] = useState([])
-  const [currentMenu, setCurrentMenu] = useState({})
+  const [parentOpen, setParentOpen] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [currentRights, setCurrentRights] = useState([]);
+  const [currentMenu, setCurrentMenu] = useState({});
 
   const parentHandleOk = () => {
     if (currentRights[0] === currentMenu['menu_id']) {
-      messageApi.error('不能选择菜单自己')
-      return
+      messageApi.error('不能选择菜单自己');
+      return;
     }
     // 加载
-    setConfirmLoading(true)
+    setConfirmLoading(true);
     // 上级菜单
-    http.post('/menu/updateMenu', toHump({ ...currentMenu, parent_id: currentRights[0] })).then((res) => {
-      console.log(res.data)
-      setParentOpen(false)
-      setConfirmLoading(false)
+    menuStore.updateMenu({ ...currentMenu, parent_id: currentRights[0] }).then((res) => {
+      // console.log(res.data);
+      setParentOpen(false);
+      setConfirmLoading(false);
       if (res.data.code === 200) {
-        messageApi.success(res.data.msg)
+        messageApi.success(res.data.msg);
         setTimeout(() => {
-          window.location.reload()
-        }, 1000)
+          window.location.reload();
+        }, 1000);
       } else {
-        messageApi.error(res.data.msg)
+        messageApi.error(res.data.msg);
       }
-    })
-  }
+    });
+  };
   return (
     <div>
       {contextHolder}
@@ -213,9 +211,9 @@ export default function MenuList() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: menuStore.menuList.length,
         }}
-        dataSource={dataSource}
+        dataSource={menuStore.menuList}
       />
       <Modal
         open={open}
@@ -223,8 +221,8 @@ export default function MenuList() {
         okText="添加"
         cancelText="取消"
         onCancel={() => {
-          setOpen(false)
-          form.resetFields()
+          setOpen(false);
+          form.resetFields();
         }}
         onOk={() => addFormOk()}>
         <AddMenu form={form} />
@@ -235,8 +233,8 @@ export default function MenuList() {
         okText="更新"
         cancelText="取消"
         onCancel={() => {
-          setUpdateOpen(false)
-          updateForm.resetFields()
+          setUpdateOpen(false);
+          updateForm.resetFields();
         }}
         onOk={() => updateFormOk()}>
         <AddMenu form={updateForm} />
@@ -247,11 +245,12 @@ export default function MenuList() {
         onOk={parentHandleOk}
         confirmLoading={confirmLoading}
         onCancel={() => {
-          console.log('Clicked cancel button')
-          setParentOpen(false)
+          console.log('Clicked cancel button');
+          setParentOpen(false);
         }}>
         <MenuTree currentRights={currentRights} setCurrentRights={setCurrentRights} selectBoolean={false} />
       </Modal>
     </div>
-  )
+  );
 }
+export default observer(MenuList);

@@ -1,28 +1,28 @@
-import { Form, Input, Button, message } from 'antd'
-import { MyIcon } from '@/utils/MyIcon'
-import { http } from '@/utils/http'
-import { toHump } from '@/utils/toHump'
-import { useNavigate } from 'react-router-dom'
+import { Form, Input, Button, message } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import { useNavigate } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-export function LoginComponent(props) {
+function LoginComponent(props) {
+  // store
+  const { tokenStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  const navigate = useNavigate()
-  const onFinish = (values) => {
-    console.log('Success:', values)
-    http.post('/users/login', toHump(values)).then((res) => {
-      console.log(res.data)
-      if (res.data.code === 200) {
-        messageApi.success(res.data.msg)
-        setTimeout(() => {
-          localStorage.setItem('token', res.data.data)
-          navigate('/')
-        }, 1000)
-      } else {
-        messageApi.error(res.data.msg)
-      }
-    })
-  }
+  const [messageApi, contextHolder] = message.useMessage();
+  const navigate = useNavigate();
+  const onFinish = async (values) => {
+    // console.log('Success:', values);
+    await tokenStore.fetchLogin(values);
+    if (tokenStore.checkLogin) {
+      messageApi.success(tokenStore.loginInfo.msg);
+      setTimeout(() => {
+        localStorage.setItem('token', tokenStore.loginInfo.data);
+        navigate('/');
+      }, 1000);
+    } else {
+      messageApi.error(tokenStore.loginInfo.msg);
+    }
+  };
 
   return (
     <Form
@@ -60,5 +60,6 @@ export function LoginComponent(props) {
         或 <a href="/register">注册!</a>
       </Form.Item>
     </Form>
-  )
+  );
 }
+export default observer(LoginComponent);

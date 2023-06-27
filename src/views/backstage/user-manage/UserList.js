@@ -1,34 +1,32 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Form, Input, message } from 'antd'
-import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
-import { toHump } from '@/utils/toHump'
-import { dateFormat } from '@/utils/time'
-import AddUserComponent from '@/components/user-manage/AddUserComponent'
-import UpdatePassword from '@/components/user-manage/UpdatePassword'
+import React, { useEffect, useState } from 'react';
+import { Button, Modal, Table, Form, Input, message } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import { dateFormat } from '@/utils/time';
+import AddUserComponent from '@/components/user-manage/AddUserComponent';
+import UpdatePassword from '@/components/user-manage/UpdatePassword';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { confirm } = Modal
-const { Search } = Input
+const { confirm } = Modal;
+const { Search } = Input;
 // 用户列表
-export default function UserList() {
+function UserList() {
+  // store
+  const { userStore, roleStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  // table
-  const [dataSource, setDataSource] = useState([])
-  const [imageUrl, setImageUrl] = useState('')
+  const [messageApi, contextHolder] = message.useMessage();
+  const [imageUrl, setImageUrl] = useState('');
 
   useEffect(() => {
-    http.post('/users/queryAll').then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [])
+    userStore.getAllUserList();
+  }, []);
   const columns = [
     {
       title: '昵称',
       dataIndex: 'nickname',
       key: 'nickname',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -36,7 +34,7 @@ export default function UserList() {
       dataIndex: 'user_name',
       key: 'user_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -59,7 +57,7 @@ export default function UserList() {
       dataIndex: 'picture',
       key: 'picture',
       render: (pic) => {
-        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : ''
+        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : '';
       },
     },
     {
@@ -69,134 +67,119 @@ export default function UserList() {
       render: (item) => (
         <div>
           <Button danger shape="circle" icon={MyIcon('DeleteOutlined')} onClick={() => confirmMethod(item)} />
-          <Button
-            type="primary"
-            shape="circle"
-            icon={MyIcon('EditOutlined')}
-            onClick={() => handleUpdate(item)}
-          />
+          <Button type="primary" shape="circle" icon={MyIcon('EditOutlined')} onClick={() => handleUpdate(item)} />
           <Button
             danger
             shape="circle"
             icon={MyIcon('LockOutlined')}
             onClick={() => {
-              setPasswordOpen(true)
-              passwordForm.setFieldValue('user_id', item['user_id'])
+              setPasswordOpen(true);
+              passwordForm.setFieldValue('user_id', item['user_id']);
             }}
           />
         </div>
       ),
     },
-  ]
+  ];
   const confirmMethod = (item) => {
     confirm({
       title: '你确认删除吗?',
       icon: MyIcon('ExclamationCircleFilled'),
-      content: 'Some descriptions',
       okText: '删除',
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        deleteMothed(item)
+        deleteMothed(item);
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   // 删除用户操作
   const deleteMothed = (item) => {
-    console.log(item)
     // 当前页面同步状态+后端同步
-    setDataSource(dataSource.filter((data) => data['user_id'] !== item['user_id']))
-    http.post('/users/delete', toHump(item))
-  }
+    userStore.deleteUser(item).then((res) => {
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg);
+      } else {
+        messageApi.error(res.data.msg);
+      }
+    });
+  };
   // 添加用户弹出框
-  const [open, setOpen] = useState(false)
-  const [form] = Form.useForm()
-  const [roleList, setRoleList] = useState([])
+  const [open, setOpen] = useState(false);
+  const [form] = Form.useForm();
   useEffect(() => {
-    http.post('/role/roleList').then((res) => {
-      setRoleList(res.data.data)
-    })
-  }, [])
+    roleStore.getAllRoleList();
+  }, []);
   const addFormOk = () => {
     form
       .validateFields()
       .then((values) => {
-        values.sex = !!values.sex ? '男' : '女'
-        http.post('/users/register', toHump(values)).then((res) => {
-          console.log(res.data)
-          setOpen(false)
-          form.resetFields()
+        values.sex = !!values.sex ? '男' : '女';
+        userStore.addUser(values).then((res) => {
+          setOpen(false);
+          form.resetFields();
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
             setTimeout(() => {
-              window.location.reload()
-            }, 1000)
+              window.location.reload();
+            }, 1000);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   // 更新用户弹出框
-  const [updateOpen, setUpdateOpen] = useState(false)
-  const [updateForm] = Form.useForm()
-  const [hiddenPassword] = useState(true)
+  const [updateOpen, setUpdateOpen] = useState(false);
+  const [updateForm] = Form.useForm();
+  const [hiddenPassword] = useState(true);
 
   // 弹出更新用户
   const handleUpdate = (item) => {
-    setUpdateOpen(true)
-    setImageUrl(item.picture)
-    updateForm.setFieldsValue(item)
-    item.sex === '男' ? updateForm.setFieldValue('sex', true) : updateForm.setFieldValue('sex', false)
-  }
+    setUpdateOpen(true);
+    setImageUrl(item.picture);
+    updateForm.setFieldsValue(item);
+    // console.log('item', item);
+    item.sex === '男' ? updateForm.setFieldValue('sex', true) : updateForm.setFieldValue('sex', false);
+  };
   const updateFormOk = () => {
     updateForm
       .validateFields()
       .then((values) => {
-        values.sex = !!values.sex ? '男' : '女'
-        values['regist_time'] = new Date(values['regist_time'])
-        http.post('/users/update', toHump(values)).then((res) => {
-          console.log(res.data)
-          setUpdateOpen(false)
-          updateForm.resetFields()
+        values.sex = !!values.sex ? '男' : '女';
+        values['regist_time'] = new Date(values['regist_time']);
+        userStore.updateUser(values).then((res) => {
+          // console.log(res.data);
+          setUpdateOpen(false);
+          updateForm.resetFields();
           if (res.data.code === 200) {
-            setDataSource(
-              dataSource.map((item) => {
-                if (item['user_id'] === values['user_id']) {
-                  return values
-                }
-                return item
-              })
-            )
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   // 修改密码
-  const [passwordOpen, setPasswordOpen] = useState(false)
-  const [passwordForm] = Form.useForm()
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordForm] = Form.useForm();
   // 搜索
   const onSearch = (value) => {
-    let href = '/users/getSearch'
     if (value === '') {
-      href = '/users/queryAll'
+      userStore.getAllUserList(true);
+    } else {
+      userStore.getSearch(value);
     }
-    http.post(href, { keywords: value }).then((res) => {
-      setDataSource(res.data.data)
-    })
-  }
+  };
   return (
     <div>
       {contextHolder}
@@ -223,7 +206,7 @@ export default function UserList() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: userStore.userList.length,
           showTotal: (total) => `总共：${total}个`,
         }}
         expandable={{
@@ -244,7 +227,7 @@ export default function UserList() {
             </div>
           ),
         }}
-        dataSource={dataSource}
+        dataSource={userStore.userList}
       />
 
       <Modal
@@ -253,12 +236,17 @@ export default function UserList() {
         okText="添加"
         cancelText="取消"
         onCancel={() => {
-          setOpen(false)
-          form.resetFields()
-          setImageUrl('')
+          setOpen(false);
+          form.resetFields();
+          setImageUrl('');
         }}
         onOk={() => addFormOk()}>
-        <AddUserComponent form={form} roleList={roleList} imageUrl={imageUrl} setImageUrl={setImageUrl} />
+        <AddUserComponent
+          form={form}
+          roleList={roleStore.roleList}
+          imageUrl={imageUrl}
+          setImageUrl={setImageUrl}
+        />
       </Modal>
       <Modal
         open={updateOpen}
@@ -266,14 +254,14 @@ export default function UserList() {
         okText="更新"
         cancelText="取消"
         onCancel={() => {
-          setUpdateOpen(false)
-          updateForm.resetFields()
-          setImageUrl('')
+          setUpdateOpen(false);
+          updateForm.resetFields();
+          setImageUrl('');
         }}
         onOk={() => updateFormOk()}>
         <AddUserComponent
           form={updateForm}
-          roleList={roleList}
+          roleList={roleStore.roleList}
           isHiddenPassword={hiddenPassword}
           imageUrl={imageUrl}
           setImageUrl={setImageUrl}
@@ -285,26 +273,27 @@ export default function UserList() {
         okText="确认修改"
         cancelText="取消"
         onCancel={() => {
-          setPasswordOpen(false)
-          passwordForm.resetFields()
+          setPasswordOpen(false);
+          passwordForm.resetFields();
         }}
         onOk={() => {
           passwordForm
             .validateFields()
             .then((values) => {
-              http.post('/users/updatePassword', toHump(values)).then((res) => {
-                console.log(res.data)
-                setPasswordOpen(false)
-                passwordForm.resetFields()
-                messageApi.success(res.data.msg)
-              })
+              userStore.updatePassword(values).then((res) => {
+                // console.log(res.data);
+                setPasswordOpen(false);
+                passwordForm.resetFields();
+                messageApi.success(res.data.msg);
+              });
             })
             .catch((info) => {
-              console.log('Validate Failed:', info)
-            })
+              console.log('Validate Failed:', info);
+            });
         }}>
         <UpdatePassword form={passwordForm} />
       </Modal>
     </div>
-  )
+  );
 }
+export default observer(UserList);

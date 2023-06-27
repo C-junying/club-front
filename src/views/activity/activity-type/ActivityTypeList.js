@@ -1,34 +1,32 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Form, Input, message } from 'antd'
-import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
-import { toHump } from '@/utils/toHump'
-import ActivityTypeComponent from '@/components/activity/ActivityTypeComponent'
+import React, { useEffect, useState } from 'react';
+import { Button, Modal, Table, Form, Input, message } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import ActivityTypeComponent from '@/components/activity/ActivityTypeComponent';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { confirm } = Modal
-const { Search } = Input
+const { confirm } = Modal;
+const { Search } = Input;
 
 // 活动类型列表
-export default function ActivityTypeList() {
+function ActivityTypeList() {
+  // store
+  const { activityTypeStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  // table操作
-  const [dataSource, setDataSource] = useState([])
+  const [messageApi, contextHolder] = message.useMessage();
 
   //   图片地址
-  const [imageUrl, setImageUrl] = useState('')
+  const [imageUrl, setImageUrl] = useState('');
   useEffect(() => {
-    http.post('/activity/activityTypeAll').then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [])
+    activityTypeStore.getAllTypeList();
+  }, []);
   const columns = [
     {
       title: '活动类型名称',
       dataIndex: 'type_name',
       key: 'type_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
 
@@ -42,7 +40,7 @@ export default function ActivityTypeList() {
       dataIndex: 'picture',
       key: 'picture',
       render: (pic) => {
-        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : ''
+        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : '';
       },
     },
     {
@@ -52,116 +50,106 @@ export default function ActivityTypeList() {
       render: (item) => (
         <div>
           <Button danger shape="circle" icon={MyIcon('DeleteOutlined')} onClick={() => confirmMethod(item)} />
-          <Button
-            type="primary"
-            shape="circle"
-            icon={MyIcon('EditOutlined')}
-            onClick={() => handleUpdate(item)}
-          />
+          <Button type="primary" shape="circle" icon={MyIcon('EditOutlined')} onClick={() => handleUpdate(item)} />
         </div>
       ),
     },
-  ]
+  ];
   const confirmMethod = (item) => {
     confirm({
       title: '你确认删除吗?',
       icon: MyIcon('ExclamationCircleFilled'),
-      content: 'Some descriptions',
+      // content: 'Some descriptions',
       okText: '删除',
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        deleteMothed(item)
+        deleteMothed(item);
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   // 删除操作
   const deleteMothed = (item) => {
-    console.log(item)
+    // console.log(item);
     // 当前页面同步状态+后端同步
-    setDataSource(dataSource.filter((data) => data['type_id'] !== item['type_id']))
-    http.post('/activity/deleteActivityType', toHump(item))
-  }
+    activityTypeStore.deleteType(item).then((res) => {
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg);
+      } else {
+        messageApi.error(res.data.msg);
+      }
+    });
+  };
   // 添加活动类型弹出框
-  const [addOpen, setAddOpen] = useState(false)
-  const [addForm] = Form.useForm()
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm] = Form.useForm();
 
   const addFormOk = () => {
     addForm
       .validateFields()
       .then((values) => {
-        http.post('/activity/addActivityType', toHump(values)).then((res) => {
-          setAddOpen(false)
-          addForm.resetFields()
+        activityTypeStore.addType(values).then((res) => {
+          setAddOpen(false);
+          addForm.resetFields();
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
             setTimeout(() => {
-              window.location.reload()
-            }, 1000)
+              window.location.reload();
+            }, 1000);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
 
   // 更新活动类型弹出框
-  const [updateOpen, setUpdateOpen] = useState(false)
-  const [updateForm] = Form.useForm()
+  const [updateOpen, setUpdateOpen] = useState(false);
+  const [updateForm] = Form.useForm();
 
   // 弹出更新活动类型
   const handleUpdate = (item) => {
-    console.log(item)
-    setUpdateOpen(true)
-    setImageUrl(item.picture)
-    updateForm.setFieldsValue(item)
-  }
+    // console.log(item);
+    setUpdateOpen(true);
+    setImageUrl(item.picture);
+    updateForm.setFieldsValue(item);
+  };
   const updateFormOk = () => {
     updateForm
       .validateFields()
       .then((values) => {
-        http.post('/activity/updateActivityType', toHump(values)).then((res) => {
-          console.log(res.data)
-          setUpdateOpen(false)
-          updateForm.resetFields()
-          let type = 'error'
+        activityTypeStore.updateType(values).then((res) => {
+          // console.log(res.data)
+          setUpdateOpen(false);
+          updateForm.resetFields();
+          let type = 'error';
           if (res.data.code === 200) {
-            type = 'success'
-            setDataSource(
-              dataSource.map((item) => {
-                if (item['type_id'] === values['type_id']) {
-                  return values
-                }
-                return item
-              })
-            )
+            type = 'success';
           }
           messageApi.open({
             type,
             content: res.data.msg,
-          })
-        })
+          });
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   // 模糊查询
   const onSearch = (value) => {
-    let href = '/activity/activityTypeSearch'
     if (value === '') {
-      href = '/activity/activityTypeAll'
+      activityTypeStore.getAllTypeList(true);
+    } else {
+      activityTypeStore.getSearch(value);
     }
-    http.post(href, { search: value }).then((res) => {
-      setDataSource(res.data.data)
-    })
-  }
+  };
   return (
     <div>
       {contextHolder}
@@ -188,10 +176,10 @@ export default function ActivityTypeList() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: activityTypeStore.typeList.length,
           showTotal: (total) => `总共：${total}个`,
         }}
-        dataSource={dataSource}
+        dataSource={activityTypeStore.typeList}
       />
       <Modal
         open={addOpen}
@@ -199,9 +187,9 @@ export default function ActivityTypeList() {
         okText="添加"
         cancelText="取消"
         onCancel={() => {
-          setAddOpen(false)
-          addForm.resetFields()
-          setImageUrl('')
+          setAddOpen(false);
+          addForm.resetFields();
+          setImageUrl('');
         }}
         onOk={() => addFormOk()}>
         <ActivityTypeComponent form={addForm} imageUrl={imageUrl} setImageUrl={setImageUrl} />
@@ -212,13 +200,14 @@ export default function ActivityTypeList() {
         okText="更新"
         cancelText="取消"
         onCancel={() => {
-          setUpdateOpen(false)
-          updateForm.resetFields()
-          setImageUrl('')
+          setUpdateOpen(false);
+          updateForm.resetFields();
+          setImageUrl('');
         }}
         onOk={() => updateFormOk()}>
         <ActivityTypeComponent form={updateForm} imageUrl={imageUrl} setImageUrl={setImageUrl} />
       </Modal>
     </div>
-  )
+  );
 }
+export default observer(ActivityTypeList);

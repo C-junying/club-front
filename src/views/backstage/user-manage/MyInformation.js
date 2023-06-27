@@ -1,69 +1,71 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Modal, Form, Input, Switch, message } from 'antd'
-import { http } from '@/utils/http'
-import { toHump } from '@/utils/toHump'
-import { dateFormat } from '@/utils/time'
-import UpdatePassword from '@/components/user-manage/UpdatePassword'
-import MyUpload from '@/components/other/MyUpload'
-import './index.css'
+import React, { useEffect, useState } from 'react';
+import { Button, Modal, Form, Input, Switch, message } from 'antd';
+import { toReverseHump } from '@/utils/toHump';
+import { dateFormat } from '@/utils/time';
+import UpdatePassword from '@/components/user-manage/UpdatePassword';
+import MyUpload from '@/components/other/MyUpload';
+import './index.css';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 // 用户信息
-export default function MyInformation() {
+function MyInformation() {
+  // store
+  const { tokenStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
+  const [messageApi, contextHolder] = message.useMessage();
   // 控制修改
-  const [flag, setFlag] = useState(false)
+  const [flag, setFlag] = useState(false);
   // 修改
   const alterFlag = () => {
-    setFlag(true)
-  }
-  const [userId, setUserId] = useState('')
-  const [form] = Form.useForm()
+    setFlag(true);
+  };
+  const [userId, setUserId] = useState('');
+  const [form] = Form.useForm();
   // 修改密码
-  const [passwordOpen, setPasswordOpen] = useState(false)
-  const [passwordForm] = Form.useForm()
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordForm] = Form.useForm();
 
   //   头像相关信息
-  const [imageUrl, setImageUrl] = useState(null)
+  const [imageUrl, setImageUrl] = useState(null);
   useEffect(() => {
-    http.post('/users/getUserInfo').then((res) => {
-      res.data.data['regist_time'] = dateFormat(res.data.data['regist_time'])
-      setUserId(res.data.data['user_id'])
-      form.setFieldsValue(res.data.data)
-      setImageUrl(res.data.data.picture)
-    })
-  }, [form])
-  const [loading, setLoading] = useState(false)
+    let userInfo = toReverseHump(tokenStore.userInfo);
+    if (userInfo) {
+      userInfo['regist_time'] = dateFormat(userInfo['regist_time']);
+      setUserId(userInfo['user_id']);
+      form.setFieldsValue(userInfo);
+      setImageUrl(userInfo.picture);
+    }
+    // console.log(tokenStore);
+  }, [tokenStore.userInfo]);
+  const [loading, setLoading] = useState(false);
   const imageHandleChange = (info) => {
     if (Array.isArray(info)) {
-      return info
+      return info;
     }
     if (info.file.status === 'uploading') {
-      setLoading(true)
+      setLoading(true);
     }
     if (info.file.status === 'done') {
-      setLoading(false)
-      setImageUrl(info.file.response.data.img)
-      form.setFieldValue('picture', info.file.response.data.img)
+      setLoading(false);
+      setImageUrl(info.file.response.data.img);
+      form.setFieldValue('picture', info.file.response.data.img);
     }
-    return info && info.fileList
-  }
+    return info && info.fileList;
+  };
   const submitForm = () => {
     form.validateFields().then((values) => {
-      values['user_id'] = userId
-      values.sex = !!values.sex ? '男' : '女'
-      http.post('/users/updateCurrentUser', toHump(values)).then((res) => {
+      values['user_id'] = userId;
+      values.sex = !!values.sex ? '男' : '女';
+      tokenStore.updateUserInfo(values).then((res) => {
         if (res.data.code === 200) {
-          messageApi.success(res.data.msg)
+          messageApi.success(res.data.msg);
         } else {
-          messageApi.error(res.data.msg)
+          messageApi.error(res.data.msg);
         }
-        setFlag(false)
-        setTimeout(() => {
-          window.location.reload()
-        }, 1000)
-      })
-    })
-  }
+        setFlag(false);
+      });
+    });
+  };
   return (
     <>
       {contextHolder}
@@ -161,8 +163,8 @@ export default function MyInformation() {
             type="primary"
             hidden={flag}
             onClick={() => {
-              setPasswordOpen(true)
-              passwordForm.setFieldValue('user_id', userId)
+              setPasswordOpen(true);
+              passwordForm.setFieldValue('user_id', userId);
             }}>
             修改密码
           </Button>
@@ -174,25 +176,26 @@ export default function MyInformation() {
         okText="确认修改"
         cancelText="取消"
         onCancel={() => {
-          setPasswordOpen(false)
-          passwordForm.resetFields()
+          setPasswordOpen(false);
+          passwordForm.resetFields();
         }}
         onOk={() => {
           passwordForm
             .validateFields()
             .then((values) => {
-              http.post('/users/updatePassword', toHump(values)).then((res) => {
-                setPasswordOpen(false)
-                passwordForm.resetFields()
-                messageApi.success(res.data.msg)
-              })
+              tokenStore.updatePassword(values).then((res) => {
+                setPasswordOpen(false);
+                passwordForm.resetFields();
+                messageApi.success(res.data.msg);
+              });
             })
             .catch((info) => {
-              console.log('Validate Failed:', info)
-            })
+              console.log('Validate Failed:', info);
+            });
         }}>
         <UpdatePassword form={passwordForm} />
       </Modal>
     </>
-  )
+  );
 }
+export default observer(MyInformation);

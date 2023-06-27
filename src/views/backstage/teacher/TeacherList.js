@@ -1,31 +1,29 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Form, Input, message } from 'antd'
-import { http } from '@/utils/http'
-import { toHump } from '@/utils/toHump'
-import { MyIcon } from '@/utils/MyIcon'
-import TeacherComponent from '@/components/user-manage/TeacherComponent'
+import React, { useEffect, useState } from 'react';
+import { Button, Modal, Table, Form, Input, message } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import TeacherComponent from '@/components/user-manage/TeacherComponent';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { confirm } = Modal
-const { Search } = Input
+const { confirm } = Modal;
+const { Search } = Input;
 
 // 老师列表
-export default function TeacherList() {
+function TeacherList() {
+  // store
+  const { teacherStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  // table
-  const [dataSource, setDataSource] = useState([])
+  const [messageApi, contextHolder] = message.useMessage();
   useEffect(() => {
-    http.post('/teacher/teacherAll').then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [])
+    teacherStore.getAllTeacherList();
+  }, []);
   const columns = [
     {
       title: '姓名',
       dataIndex: 'user_name',
       key: 'user_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -55,114 +53,104 @@ export default function TeacherList() {
       render: (item) => (
         <div>
           <Button danger shape="circle" icon={MyIcon('DeleteOutlined')} onClick={() => confirmMethod(item)} />
-          <Button
-            type="primary"
-            shape="circle"
-            icon={MyIcon('EditOutlined')}
-            onClick={() => handleUpdate(item)}
-          />
+          <Button type="primary" shape="circle" icon={MyIcon('EditOutlined')} onClick={() => handleUpdate(item)} />
         </div>
       ),
     },
-  ]
+  ];
   const confirmMethod = (item) => {
     confirm({
       title: '你确认删除吗?',
       icon: MyIcon('ExclamationCircleFilled'),
-      content: 'Some descriptions',
+      // content: 'Some descriptions',
       okText: '删除',
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        deleteMothed(item)
+        deleteMothed(item);
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   // 删除老师操作
   const deleteMothed = (item) => {
     // 当前页面同步状态+后端同步
-    setDataSource(dataSource.filter((data) => data['teacher_id'] !== item['teacher_id']))
-    http.post('/teacher/deleteteacher', toHump(item))
-  }
+    teacherStore.deleteTeacher(item).then((res) => {
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg);
+      } else {
+        messageApi.error(res.data.msg);
+      }
+    });
+  };
   // 添加老师弹出框
-  const [open, setOpen] = useState(false)
-  const [form] = Form.useForm()
+  const [open, setOpen] = useState(false);
+  const [form] = Form.useForm();
 
   const addFormOk = () => {
     form
       .validateFields()
       .then((values) => {
-        values.sex = !!values.sex ? '男' : '女'
-        http.post('/teacher/addteacher', toHump(values)).then((res) => {
-          console.log(res.data)
-          setOpen(false)
-          form.resetFields()
+        values.sex = !!values.sex ? '男' : '女';
+        teacherStore.addTeacher(values).then((res) => {
+          // console.log(res.data)
+          setOpen(false);
+          form.resetFields();
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
             setTimeout(() => {
-              window.location.reload()
-            }, 1000)
+              window.location.reload();
+            }, 1000);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
 
   // 更新老师弹出框
-  const [updateOpen, setUpdateOpen] = useState(false)
-  const [updateForm] = Form.useForm()
+  const [updateOpen, setUpdateOpen] = useState(false);
+  const [updateForm] = Form.useForm();
 
   // 弹出更新老师
   const handleUpdate = (item) => {
-    setUpdateOpen(true)
-    updateForm.setFieldsValue(item)
-    item.sex === '男' ? updateForm.setFieldValue('sex', true) : updateForm.setFieldValue('sex', false)
-  }
+    setUpdateOpen(true);
+    updateForm.setFieldsValue(item);
+    item.sex === '男' ? updateForm.setFieldValue('sex', true) : updateForm.setFieldValue('sex', false);
+  };
   const updateFormOk = () => {
     updateForm
       .validateFields()
       .then((values) => {
-        values.sex = !!values.sex ? '男' : '女'
-        http.post('/teacher/updateteacher', toHump(values)).then((res) => {
-          console.log(res.data)
-          setUpdateOpen(false)
-          updateForm.resetFields()
+        values.sex = !!values.sex ? '男' : '女';
+        teacherStore.updateTeacher(values).then((res) => {
+          // console.log(res.data)
+          setUpdateOpen(false);
+          updateForm.resetFields();
           if (res.data.code === 200) {
-            setDataSource(
-              dataSource.map((item) => {
-                if (item['teacher_id'] === values['teacher_id']) {
-                  return values
-                }
-                return item
-              })
-            )
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   // 搜索
   const onSearch = (value) => {
-    let href = '/teacher/teacherSearch'
     if (value === '') {
-      href = '/teacher/teacherAll'
+      teacherStore.getAllTeacherList(true);
+    } else {
+      teacherStore.getSearch(value);
     }
-    http.post(href, { keywords: value }).then((res) => {
-      setDataSource(res.data.data)
-    })
-  }
+  };
   return (
     <div>
       {contextHolder}
@@ -189,10 +177,10 @@ export default function TeacherList() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: teacherStore.teacherList.length,
           showTotal: (total) => `总共：${total}个`,
         }}
-        dataSource={dataSource}
+        dataSource={teacherStore.teacherList}
       />
 
       <Modal
@@ -201,8 +189,8 @@ export default function TeacherList() {
         okText="添加"
         cancelText="取消"
         onCancel={() => {
-          setOpen(false)
-          form.resetFields()
+          setOpen(false);
+          form.resetFields();
         }}
         onOk={() => addFormOk()}>
         <TeacherComponent form={form} />
@@ -213,12 +201,13 @@ export default function TeacherList() {
         okText="更新"
         cancelText="取消"
         onCancel={() => {
-          setUpdateOpen(false)
-          updateForm.resetFields()
+          setUpdateOpen(false);
+          updateForm.resetFields();
         }}
         onOk={() => updateFormOk()}>
         <TeacherComponent form={updateForm} isHidden={true} />
       </Modal>
     </div>
-  )
+  );
 }
+export default observer(TeacherList);

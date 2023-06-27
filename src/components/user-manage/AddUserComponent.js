@@ -1,31 +1,31 @@
-import { useState } from 'react'
-import { Form, Input, Switch, Select } from 'antd'
+import { useState } from 'react';
+import { Form, Input, Switch, Select } from 'antd';
 
-import MyUpload from '../other/MyUpload'
+import MyUpload from '../other/MyUpload';
 
 export default function AddUserComponent(props) {
-  const form = props.form
-  const roleList = props.roleList
+  const form = props.form;
+  const roleList = props.roleList;
   const handleChange = (value) => {
-    console.log(`selected ${value}`)
-  }
-  const { imageUrl, setImageUrl } = props
-  const [loading, setLoading] = useState(false)
+    console.log(`selected ${value}`);
+  };
+  const { imageUrl, setImageUrl } = props;
+  const [loading, setLoading] = useState(false);
 
   const imageHandleChange = (info) => {
     if (Array.isArray(info)) {
-      return info
+      return info;
     }
     if (info.file.status === 'uploading') {
-      setLoading(true)
+      setLoading(true);
     }
     if (info.file.status === 'done') {
-      setLoading(false)
-      setImageUrl(info.file.response.data.img)
-      form.setFieldValue('picture', info.file.response.data.img)
+      setLoading(false);
+      setImageUrl(info.file.response.data.img);
+      form.setFieldValue('picture', info.file.response.data.img);
     }
-    return info && info.fileList
-  }
+    return info && info.fileList;
+  };
   return (
     <Form form={form} layout="vertical" name="form_in_modal" validateTrigger={['onBlur', 'onChange']}>
       <Form.Item name="user_id" label="用户编号" hidden>
@@ -119,5 +119,5 @@ export default function AddUserComponent(props) {
         />
       </Form.Item>
     </Form>
-  )
+  );
 }
