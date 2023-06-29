@@ -2,6 +2,7 @@
 // 处理对象：数组，对象
 export function toHump(data) {
   if (typeof data != 'object' || !data) return data;
+  if (data instanceof Date) return data;
   if (Array.isArray(data)) {
     return data.map((item) => toHump(item));
   }
@@ -16,6 +17,7 @@ export function toHump(data) {
 // 将驼峰转为下划线
 export function toReverseHump(data) {
   if (typeof data != 'object' || !data) return data;
+  if (data instanceof Date) return data;
   if (Array.isArray(data)) {
     return data.map((item) => toHump(item));
   }

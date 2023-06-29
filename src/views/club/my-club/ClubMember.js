@@ -1,45 +1,36 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Form, Input, message } from 'antd'
-import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
-import { toHump } from '@/utils/toHump'
-import { useParams, useLocation } from 'react-router-dom'
-import ClubMemberConponent from '@/components/club/ClubMemberConponent'
+import React, { useEffect, useState } from 'react';
+import { Button, Modal, Table, Form, Input, message } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import { useParams } from 'react-router-dom';
+import ClubMemberConponent from '@/components/club/ClubMemberConponent';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { confirm } = Modal
-const { Search } = Input
+const { confirm } = Modal;
+const { Search } = Input;
 
 // 社团成员
-export default function ClubMember() {
+function ClubMember() {
+  // store
+  const { clubMemberStore, clubStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  // table
-  const [dataSource, setDataSource] = useState([])
-  // 当前用户
-  const [myUser, setMyUser] = useState({})
-  // 社团信息
-  const [clubInfo, setClubInfo] = useState({})
+  const [messageApi, contextHolder] = message.useMessage();
   //   获取链接数据
-  const params = useParams()
-  const location = useLocation()
+  const params = useParams();
+  // 当前用户
+  const [myUser] = useState(clubStore.userPosition);
+  // 社团信息
+  const [clubInfo] = useState(clubStore.getCurrentClub(params.clubId));
   useEffect(() => {
-    // 获取当前用户的信息
-    // 获取传来的数据
-    setMyUser(location.state.myUser)
-    setClubInfo(location.state.clubInfo)
-  }, [location])
-  useEffect(() => {
-    http.post('/club/getClubMember', toHump(params)).then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [params])
+    clubMemberStore.getAllMemberList(params);
+  }, [params]);
   const columns = [
     {
       title: '姓名',
       dataIndex: 'user_name',
       key: 'user_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -62,7 +53,7 @@ export default function ClubMember() {
       dataIndex: 'picture',
       key: 'picture',
       render: (pic) => {
-        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : ''
+        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : '';
       },
     },
     {
@@ -76,32 +67,22 @@ export default function ClubMember() {
             shape="circle"
             icon={MyIcon('DeleteOutlined')}
             onClick={() => confirmMethod(item)}
-            hidden={
-              (myUser['bear_name'] === '社长' ? false : true) ||
-              item['bear_name'] === '指导老师' ||
-              item['bear_name'] === '社长' ||
-              clubInfo.state === 2
-            }
+            hidden={item['bear_name'] === '指导老师' || item['bear_name'] === '社长' || clubInfo.state === 2}
           />
           <Button
             type="primary"
             shape="circle"
             icon={MyIcon('UnorderedListOutlined')}
             onClick={() => {
-              setMemberBearOpen(true)
-              memberBearForm.setFieldsValue(item)
+              setMemberBearOpen(true);
+              memberBearForm.setFieldsValue(item);
             }}
-            hidden={
-              (myUser['bear_name'] === '社长' ? false : true) ||
-              item['bear_name'] === '指导老师' ||
-              item['bear_name'] === '社长' ||
-              clubInfo.state === 2
-            }
+            hidden={item['bear_name'] === '指导老师' || item['bear_name'] === '社长' || clubInfo.state === 2}
           />
         </div>
       ),
     },
-  ]
+  ];
   const confirmMethod = (item) => {
     confirm({
       title: '你确认删除吗?',
@@ -110,80 +91,80 @@ export default function ClubMember() {
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        deleteMothed(item)
+        deleteMothed(item);
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   // 删除用户操作
   const deleteMothed = (item) => {
     // 当前页面同步状态+后端同步
-    setDataSource(dataSource.filter((data) => data['user_id'] !== item['user_id']))
-    http.post('/club/deleteMember', toHump(item))
-  }
+    clubMemberStore.deleteMember(item).then((res) => {
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg);
+      } else {
+        messageApi.error(res.data.msg);
+      }
+    });
+  };
   // 添加社团成员
-  const [memberOpen, setMemberOpen] = useState(false)
-  const [memberForm] = Form.useForm()
+  const [memberOpen, setMemberOpen] = useState(false);
+  const [memberForm] = Form.useForm();
   // 添加操作
   const addMemberFormOk = () => {
     memberForm
       .validateFields()
       .then((values) => {
-        values.clubId = params.clubId
-        http.post('/club/addMember', toHump(values)).then((res) => {
-          setMemberOpen(false)
-          memberForm.resetFields()
+        values.clubId = params.clubId;
+        clubMemberStore.captainAddClubMember(values).then((res) => {
+          setMemberOpen(false);
+          memberForm.resetFields();
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
             setTimeout(() => {
-              window.location.reload()
-            }, 1000)
+              window.location.reload();
+            }, 1000);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   // 分配职位
-  const [memberBear, setMemberBearOpen] = useState(false)
-  const [memberBearForm] = Form.useForm()
+  const [memberBear, setMemberBearOpen] = useState(false);
+  const [memberBearForm] = Form.useForm();
 
   const memberBearFormOk = () => {
     memberBearForm
       .validateFields()
       .then((values) => {
-        http.post('/club/updateMemberBear', toHump(values)).then((res) => {
-          setMemberBearOpen(false)
-          memberBearForm.resetFields()
+        clubMemberStore.updateMemberBear(values).then((res) => {
+          setMemberBearOpen(false);
+          memberBearForm.resetFields();
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
-            setTimeout(() => {
-              window.location.reload()
-            }, 1000)
+            messageApi.success(res.data.msg);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   // 搜索
   const onSearch = (value) => {
-    let href = '/club/searchClubMember'
     if (value === '') {
-      href = '/club/getClubMember'
+      clubMemberStore.getAllMemberList(params, true);
+    } else {
+      clubMemberStore.getSearch({ ...params, keywords: value });
     }
-    http.post(href, toHump({ ...params, keywords: value })).then((res) => {
-      setDataSource(res.data.data)
-    })
-  }
+  };
   return (
     <>
       {contextHolder}
@@ -216,10 +197,10 @@ export default function ClubMember() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: clubMemberStore.memberList.length,
           showTotal: (total) => `总共：${total}个`,
         }}
-        dataSource={dataSource}
+        dataSource={clubMemberStore.memberList}
       />
       <Modal
         open={memberOpen}
@@ -227,8 +208,8 @@ export default function ClubMember() {
         okText="添加"
         cancelText="取消"
         onCancel={() => {
-          setMemberOpen(false)
-          memberForm.resetFields()
+          setMemberOpen(false);
+          memberForm.resetFields();
         }}
         onOk={() => addMemberFormOk()}>
         <ClubMemberConponent form={memberForm} />
@@ -239,12 +220,13 @@ export default function ClubMember() {
         okText="分配"
         cancelText="取消"
         onCancel={() => {
-          setMemberBearOpen(false)
-          memberBearForm.resetFields()
+          setMemberBearOpen(false);
+          memberBearForm.resetFields();
         }}
         onOk={() => memberBearFormOk()}>
         <ClubMemberConponent form={memberBearForm} isDisabled={true} />
       </Modal>
     </>
-  )
+  );
 }
+export default observer(ClubMember);

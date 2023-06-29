@@ -35,7 +35,7 @@ function MyInformation() {
       form.setFieldsValue(userInfo);
       setImageUrl(userInfo.picture);
     }
-    // console.log(tokenStore);
+    // console.log(userInfo);
   }, [tokenStore.userInfo]);
   const [loading, setLoading] = useState(false);
   const imageHandleChange = (info) => {

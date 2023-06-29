@@ -30,7 +30,7 @@ class TokenStore {
   async updateLoginInfo() {
     let user = await http.post('/users/getUserInfo').then((res) => Promise.resolve(res.data));
     runInAction(() => {
-      this.loginInfo = toHump({ ...user, userInfo: user.data });
+      this.loginInfo = toHump({ code: user.code, userInfo: user.data });
     });
   }
   // 请求登录

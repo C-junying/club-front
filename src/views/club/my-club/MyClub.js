@@ -1,29 +1,27 @@
-import React, { useEffect, useState } from 'react'
-import { Card, Col, Row, Avatar } from 'antd'
-import HeanderTitle from '@/components/other/HeanderTitle'
-import { http } from '@/utils/http'
-
-import { group } from '@/utils/myMethod'
-import { useNavigate } from 'react-router-dom'
-const { Meta } = Card
+import React, { useEffect } from 'react';
+import { Card, Col, Row, Avatar } from 'antd';
+import HeanderTitle from '@/components/other/HeanderTitle';
+import { group } from '@/utils/myMethod';
+import { useNavigate } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
+const { Meta } = Card;
 // 我的社团
-export default function MyClub() {
-  const navigate = useNavigate()
-  // 表格数据
-  const [dataSource, setDataSource] = useState([])
+function MyClub() {
+  // store
+  const { clubStore } = useRootStore();
+  const navigate = useNavigate();
   useEffect(() => {
-    http.post('/club/getUserClubs').then((res) => {
-      setDataSource(group(res.data.data, 3))
-    })
-  }, [])
+    clubStore.getUserClubList();
+  }, []);
   const onClick = (item) => {
-    navigate(`${item}/intro`)
-  }
+    navigate(`${item}/intro`);
+  };
   return (
     <>
       <HeanderTitle title="我的社团" />
 
-      {dataSource.map((row, idx) => {
+      {group(clubStore.userClubList, 3).map((row, idx) => {
         return (
           <Row gutter={32} key={idx} style={{ marginBottom: 20, marginLeft: 25 }}>
             {row.map((club) => {
@@ -40,11 +38,12 @@ export default function MyClub() {
                     />
                   </Card>
                 </Col>
-              )
+              );
             })}
           </Row>
-        )
+        );
       })}
     </>
-  )
+  );
 }
+export default observer(MyClub);

@@ -1,48 +1,42 @@
-import React, { useEffect, useState } from 'react'
-import { Descriptions, Tag, Image, Button, Modal } from 'antd'
-import { NavLink, useParams } from 'react-router-dom'
-import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
-import { dateFormat } from '@/utils/time'
+import React, { useEffect, useState } from 'react';
+import { Descriptions, Tag, Image, Button, Modal } from 'antd';
+import { NavLink, useParams } from 'react-router-dom';
+import { MyIcon } from '@/utils/MyIcon';
+import { dateFormat } from '@/utils/time';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { confirm } = Modal
+const { confirm } = Modal;
 // 社团信息
-export default function ClubInformation() {
-  const [applyClubInfo, setApplyClubInfo] = useState(null)
-  const [teacherInfo, setTeacherInfo] = useState(null)
+function ClubInformation() {
+  // store
+  const { clubMemberStore, clubStore } = useRootStore();
+
+  const [applyClubInfo, setApplyClubInfo] = useState(null);
+  const [teacherInfo, setTeacherInfo] = useState(null);
   //   获取链接数据
-  const params = useParams()
+  const params = useParams();
   // user
-  const [myUser, setMyUser] = useState({})
+  // const [myUser, setMyUser] = useState({});
 
   const auditList = [
     <Tag color="processing">审核中</Tag>,
     <Tag color="success">已通过</Tag>,
     <Tag color="error">未通过</Tag>,
-  ]
+  ];
   const clubStateList = [
     <Tag color="processing">未发布</Tag>,
     <Tag color="success">已发布</Tag>,
     <Tag color="error">解散</Tag>,
-  ]
+  ];
   useEffect(() => {
-    http.post('/club/clubIdApplyClub', params).then((res) => {
-      http.post('/teacher/clubIdTeacher', { clubId: res.data.data[0]['club_id'] }).then((teacher) => {
-        setApplyClubInfo(res.data.data[0])
-        setTeacherInfo(teacher.data.data[0])
-      })
-    })
-  }, [params])
-  // 获取当前用户的信息
-  useEffect(() => {
-    http.post('/club/clubIdUserIdToBearName', params).then((res) => {
-      if (res.data.data.member.length > 0) {
-        setMyUser(res.data.data.member[0])
-      } else if (res.data.data.taecher.length > 0) {
-        setMyUser(res.data.data.taecher[0])
-      }
-    })
-  }, [params])
+    clubStore.currentClubDesciption(params).then((res) => {
+      setApplyClubInfo(res.data.data[0]);
+    });
+    clubStore.currentClubTeacher(params).then((teacher) => {
+      setTeacherInfo(teacher.data.data[0]);
+    });
+  }, [params]);
 
   // 加入社团
   const addMember = () => {
@@ -52,18 +46,18 @@ export default function ClubInformation() {
       okText: '加入',
       cancelText: '取消',
       onOk() {
-        http.post('/club/userJoinMember', params).then((res) => {
-          alert(res.data.msg)
+        clubMemberStore.addClubMember(params).then((res) => {
+          alert(res.data.msg);
           setTimeout(() => {
-            window.location.reload()
-          }, 1000)
-        })
+            window.location.reload();
+          }, 1000);
+        });
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   return (
     <div>
       {applyClubInfo && (
@@ -71,7 +65,7 @@ export default function ClubInformation() {
           type="primary"
           shape="round"
           style={{ marginBottom: 5 }}
-          hidden={applyClubInfo.state === 2 || (myUser['bear_name'] === '社长' ? false : true)}>
+          hidden={applyClubInfo.state === 2 || (clubStore.userPosition['bear_name'] === '社长' ? false : true)}>
           <NavLink to={`update`}>更新社团信息</NavLink>
         </Button>
       )}
@@ -80,12 +74,12 @@ export default function ClubInformation() {
           type="primary"
           shape="round"
           style={{ marginBottom: 5 }}
-          hidden={applyClubInfo.state === 2 || (JSON.stringify(myUser) === '{}' ? false : true)}
+          hidden={applyClubInfo.state === 2 || (JSON.stringify(clubStore.userPosition) === '{}' ? false : true)}
           onClick={addMember}>
           加入社团
         </Button>
       )}
-      {applyClubInfo && (
+      {applyClubInfo && teacherInfo && (
         <div>
           <Descriptions size="small" column={3} bordered>
             <Descriptions.Item label="社长">{applyClubInfo['user_name']}</Descriptions.Item>
@@ -142,5 +136,6 @@ export default function ClubInformation() {
         </div>
       )}
     </div>
-  )
+  );
 }
+export default observer(ClubInformation);

@@ -7,6 +7,9 @@ import AreaStore from './AreaStore/AreaStore';
 import TeacherStore from './TeacherStore/TeacherStore';
 import ClubTypeStore from './ClubStore/ClubTypeStore';
 import ActivityTypeStore from './ActivityStore/ActivityTypeStore';
+import ClubStore from './ClubStore/ClubStore';
+import ClubProcessStore from './ClubStore/ClubProcessStore';
+import ClubMemberStore from './ClubStore/ClubMemberStore';
 
 class RootStore {
   // 组合模块
@@ -25,7 +28,12 @@ class RootStore {
     this.teacherStore = new TeacherStore();
     // 社团类型
     this.clubTypeStore = new ClubTypeStore();
-
+    // 社团申请流程
+    this.clubProcessStore = new ClubProcessStore();
+    // 社团信息
+    this.clubStore = new ClubStore();
+    // 社团成员
+    this.clubMemberStore = new ClubMemberStore();
     // 活动类型
     this.activityTypeStore = new ActivityTypeStore();
   }

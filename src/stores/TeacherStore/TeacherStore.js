@@ -12,7 +12,7 @@ class TeacherStore {
     if (this.teacherList.length > 0 && !flag) {
       return;
     }
-    let teacherList = await http.post('/teacher/teacherAll').then((res) => res);
+    let teacherList = await http.post('/teacher/teacherAll');
     runInAction(() => {
       this.teacherList = teacherList.data.data;
     });
@@ -44,6 +44,15 @@ class TeacherStore {
     let teacherList = await http.post('/teacher/teacherSearch', { keywords: value });
     runInAction(() => {
       this.teacherList = teacherList.data.data;
+    });
+  }
+  // 老师信息的简单介绍
+  get teacherListIntro() {
+    return [...this.teacherList].map((item) => {
+      return {
+        teacher_intro: `${item['user_name']} (${item.college}) (${item.position})`,
+        teacher_id: item['teacher_id'],
+      };
     });
   }
 }

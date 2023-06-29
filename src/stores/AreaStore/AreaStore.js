@@ -3,6 +3,7 @@ import { http } from '@/utils/http';
 import { toHump } from '@/utils/toHump';
 class AreaStore {
   areaList = [];
+  areaStatusList = [];
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
   }
@@ -11,7 +12,7 @@ class AreaStore {
     if (this.areaList.length > 0 && !flag) {
       return;
     }
-    let areaList = await http.post('/area/areaAll').then((res) => res);
+    let areaList = await http.post('/area/areaAll');
     runInAction(() => {
       this.areaList = areaList.data.data;
     });
@@ -43,6 +44,26 @@ class AreaStore {
     runInAction(() => {
       this.areaList = areaList.data.data;
     });
+  }
+  // 获取场地状态
+  async getAreaState() {
+    if (this.areaStatusList.length > 0) {
+      return;
+    }
+    let list = await http.post('/area/areaStatusAll');
+    let disableList = list.data.data.map((item) => {
+      if (item.status !== 1) {
+        item.disabled = true;
+      }
+      return item;
+    });
+    runInAction(() => {
+      this.areaStatusList = disableList;
+    });
+  }
+  // 返回排序后的结果
+  get areaSortStatusList() {
+    return [...this.areaStatusList].sort((a, b) => a.status - b.status);
   }
 }
 

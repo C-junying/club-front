@@ -12,7 +12,7 @@ class UserStore {
     if (this.userList.length > 0 && !flag) {
       return;
     }
-    let userList = await http.post('/users/queryAll').then((res) => res);
+    let userList = await http.post('/users/queryAll');
     runInAction(() => {
       this.userList = userList.data.data;
     });
@@ -24,7 +24,6 @@ class UserStore {
   // 删除用户
   deleteUser(item) {
     this.userList = this.userList.filter((user) => user['user_id'] !== item['user_id']);
-
     return http.post('/users/delete', toHump(item));
   }
   // 更新用户

@@ -1,23 +1,21 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Tag, message } from 'antd'
-import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
-import { toHump } from '@/utils/toHump'
-import { dateFormat } from '@/utils/time'
-import { NavLink } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import { Button, Modal, Table, Tag, message } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import { dateFormat } from '@/utils/time';
+import { NavLink } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { confirm } = Modal
+const { confirm } = Modal;
 // 申请社团的列表
-export default function ClubApplyList() {
+function ClubApplyList() {
+  // store
+  const { clubProcessStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  // table
-  const [dataSource, setDataSource] = useState([])
+  const [messageApi, contextHolder] = message.useMessage();
   useEffect(() => {
-    http.post('/club/userApplyClubAll').then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [])
+    clubProcessStore.getUserApplyClubList();
+  }, []);
   const columns = [
     {
       title: '社团名称',
@@ -28,7 +26,7 @@ export default function ClubApplyList() {
           <NavLink to={`preview/${item['apply_id']}`}>
             <b>{key}</b>
           </NavLink>
-        )
+        );
       },
     },
     {
@@ -36,7 +34,7 @@ export default function ClubApplyList() {
       dataIndex: 'user_name',
       key: 'user_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -49,7 +47,7 @@ export default function ClubApplyList() {
       dataIndex: 'apply_time',
       key: 'apply_time',
       render: (time) => {
-        return dateFormat(time)
+        return dateFormat(time);
       },
     },
     {
@@ -58,11 +56,11 @@ export default function ClubApplyList() {
       key: 'apply_state',
       render: (state) => {
         if (state === 0) {
-          return <Tag color="processing">审核中</Tag>
+          return <Tag color="processing">审核中</Tag>;
         } else if (state === 1) {
-          return <Tag color="success">已通过</Tag>
+          return <Tag color="success">已通过</Tag>;
         } else {
-          return <Tag color="error">未通过</Tag>
+          return <Tag color="error">未通过</Tag>;
         }
       },
     },
@@ -85,7 +83,7 @@ export default function ClubApplyList() {
         </div>
       ),
     },
-  ]
+  ];
   // 撤销社团的确认框
   const confirmMethod = (item) => {
     confirm({
@@ -95,21 +93,24 @@ export default function ClubApplyList() {
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        deleteMothed(item)
+        deleteMothed(item);
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   // 撤销申请社团操作
   const deleteMothed = (item) => {
     // 当前页面同步状态+后端同步
-    http.post('/club/deleteApplyClub', toHump(item)).then((res) => {
-      messageApi.success(res.data.msg)
-      setDataSource(dataSource.filter((data) => data['apply_id'] !== item['apply_id']))
-    })
-  }
+    clubProcessStore.deleteAppleClub(item).then((res) => {
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg);
+      } else {
+        messageApi.error(res.data.msg);
+      }
+    });
+  };
   // 发布社团
   const publishClub = (item) => {
     confirm({
@@ -119,24 +120,20 @@ export default function ClubApplyList() {
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        item.state = 1
-        http.post('/club/releaseClub', toHump(item)).then((res) => {
-          messageApi.success(res.data.msg)
-          setDataSource(
-            dataSource.map((data) => {
-              if (data['apply_id'] === item['apply_id']) {
-                data['state'] = 1
-              }
-              return data
-            })
-          )
-        })
+        item.state = 1;
+        clubProcessStore.updateUserApplyClub(item).then((res) => {
+          if (res.data.code === 200) {
+            messageApi.success(res.data.msg);
+          } else {
+            messageApi.error(res.data.msg);
+          }
+        });
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   return (
     <div>
       {contextHolder}
@@ -150,7 +147,7 @@ export default function ClubApplyList() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: clubProcessStore.userApplyClub.length,
           showTotal: (total) => `总共：${total}个`,
         }}
         expandable={{
@@ -171,8 +168,9 @@ export default function ClubApplyList() {
             </div>
           ),
         }}
-        dataSource={dataSource}
+        dataSource={clubProcessStore.userApplyClub}
       />
     </div>
-  )
+  );
 }
+export default observer(ClubApplyList);

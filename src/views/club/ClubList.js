@@ -1,20 +1,19 @@
-import React, { useEffect, useState } from 'react'
-import { Table, Input } from 'antd'
-import { NavLink } from 'react-router-dom'
-import { dateFormat } from '@/utils/time'
-import { http } from '@/utils/http'
-import HeanderTitle from '@/components/other/HeanderTitle'
+import React, { useEffect } from 'react';
+import { Table, Input } from 'antd';
+import { NavLink } from 'react-router-dom';
+import { dateFormat } from '@/utils/time';
+import HeanderTitle from '@/components/other/HeanderTitle';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { Search } = Input
+const { Search } = Input;
 // 社团列表
-export default function ClubList() {
-  // table
-  const [dataSource, setDataSource] = useState([])
+function ClubList() {
+  // store
+  const { clubStore } = useRootStore();
   useEffect(() => {
-    http.post('/club/getClubsAll').then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [])
+    clubStore.getAllClubList();
+  }, []);
   const columns = [
     {
       title: '社团名称',
@@ -25,7 +24,7 @@ export default function ClubList() {
           <NavLink to={`/club/my-club/${item['club_id']}/intro`}>
             <b>{key}</b>
           </NavLink>
-        )
+        );
       },
     },
     {
@@ -33,7 +32,7 @@ export default function ClubList() {
       dataIndex: 'user_name',
       key: 'user_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -51,7 +50,7 @@ export default function ClubList() {
       dataIndex: 'picture',
       key: 'picture',
       render: (pic) => {
-        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : ''
+        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : '';
       },
     },
     {
@@ -59,20 +58,18 @@ export default function ClubList() {
       dataIndex: 'reply_time',
       key: 'reply_time',
       render: (time) => {
-        return dateFormat(time)
+        return dateFormat(time);
       },
     },
-  ]
+  ];
   // 搜索
   const onSearch = (value) => {
-    let href = '/club/searchClubsAll'
     if (value === '') {
-      href = '/club/getClubsAll'
+      clubStore.getAllClubList(true);
+    } else {
+      clubStore.getSearch(value);
     }
-    http.post(href, { keywords: value }).then((res) => {
-      setDataSource(res.data.data)
-    })
-  }
+  };
   return (
     <>
       <div id="user_top" style={{ justifyContent: 'space-between' }}>
@@ -97,11 +94,12 @@ export default function ClubList() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: clubStore.clubList.length,
           showTotal: (total) => `总共：${total}个`,
         }}
-        dataSource={dataSource}
+        dataSource={clubStore.clubList}
       />
     </>
-  )
+  );
 }
+export default observer(ClubList);

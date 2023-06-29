@@ -12,7 +12,7 @@ class ClubTypeStore {
     if (this.typeList.length > 0 && !flag) {
       return;
     }
-    let typeList = await http.post('/club/clubTypeAll').then((res) => res);
+    let typeList = await http.post('/club/clubTypeAll');
     runInAction(() => {
       this.typeList = typeList.data.data;
     });

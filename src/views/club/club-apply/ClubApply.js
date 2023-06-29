@@ -1,12 +1,11 @@
-import React, { useState } from 'react'
-import { Steps, Button, Form, message, notification } from 'antd'
-import HeanderTitle from '@/components/other/HeanderTitle'
-import '../index.css'
-import ApplyComponent from '@/components/other/ApplyComponent'
-import ClubApplyComponent from '@/components/club/ClubApplyComponent'
-import { http } from '@/utils/http'
-import { toHump } from '@/utils/toHump'
-import { useNavigate } from 'react-router-dom'
+import React, { useState } from 'react';
+import { Steps, Button, Form, message, notification } from 'antd';
+import HeanderTitle from '@/components/other/HeanderTitle';
+import '../index.css';
+import ApplyComponent from '@/components/other/ApplyComponent';
+import ClubApplyComponent from '@/components/club/ClubApplyComponent';
+import { useNavigate } from 'react-router-dom';
+import { useRootStore } from '@/stores/RootStore';
 
 const items = [
   {
@@ -21,66 +20,68 @@ const items = [
     title: '社团提交',
     description: '提交审核',
   },
-]
+];
 // 申请社团的相关操作
 export default function ClubApply() {
+  // store
+  const { clubProcessStore } = useRootStore();
   // 跳转
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
+  const [messageApi, contextHolder] = message.useMessage();
   // 控制下一步，上一步
-  const [current, setCurrent] = useState(0)
-  const [applyForm] = Form.useForm()
+  const [current, setCurrent] = useState(0);
+  const [applyForm] = Form.useForm();
   //   申请信息
-  const [applyInfo, setApplyInfo] = useState({})
-  const [clubContentForm] = Form.useForm()
+  const [applyInfo, setApplyInfo] = useState({});
+  const [clubContentForm] = Form.useForm();
   // 社团信息
-  const [clubInfor, setClubInfor] = useState({})
+  const [clubInfor, setClubInfor] = useState({});
   const handleNext = () => {
     if (current === 0) {
       applyForm
         .validateFields()
         .then((res) => {
-          setApplyInfo(res)
-          setCurrent(current + 1)
+          setApplyInfo(res);
+          setCurrent(current + 1);
         })
         .catch((error) => {
-          console.log(error)
-        })
+          console.log(error);
+        });
     } else {
       clubContentForm
         .validateFields()
         .then((res) => {
           if (!!res.picture) {
-            setClubInfor(res)
-            setCurrent(current + 1)
+            setClubInfor(res);
+            setCurrent(current + 1);
           } else {
-            messageApi.error('社团背景图没上传')
+            messageApi.error('社团背景图没上传');
           }
         })
         .catch((error) => {
-          console.log(error)
-        })
+          console.log(error);
+        });
     }
-  }
+  };
   // 上一页
   const handlePrevious = () => {
-    setCurrent(current - 1)
-  }
+    setCurrent(current - 1);
+  };
   // 提交
   const handleSave = (auditState) => {
-    applyInfo['apply_state'] = auditState
-    http.post('/club/addApplyClub', toHump({ applyInfo, clubInfor })).then((res) => {
+    applyInfo['apply_state'] = auditState;
+    clubProcessStore.applyClub({ applyInfo, clubInfor }).then((res) => {
       if (res.data.code === 200) {
-        navigate('/club/club-apply/list')
+        navigate('/club/club-apply/list');
         notification.info({
           message: `通知`,
           description: `您可以到申请列表中查看您的申请记录`,
-        })
-        messageApi.success(res.data.msg)
-      } else messageApi.error(res.data.msg)
-    })
-  }
+        });
+        messageApi.success(res.data.msg);
+      } else messageApi.error(res.data.msg);
+    });
+  };
   return (
     <div>
       {contextHolder}
@@ -111,5 +112,5 @@ export default function ClubApply() {
         {current > 0 && <Button onClick={handlePrevious}>上一步</Button>}
       </div>
     </div>
-  )
+  );
 }

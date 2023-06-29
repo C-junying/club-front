@@ -11,7 +11,7 @@ class RoleStore {
     if (this.roleList.length > 0) {
       return;
     }
-    let list = await http.post('/role/roleList').then((res) => res);
+    let list = await http.post('/role/roleList');
     runInAction(() => {
       this.roleList = list.data.data;
     });

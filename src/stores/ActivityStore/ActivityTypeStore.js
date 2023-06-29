@@ -12,7 +12,7 @@ class ActivityTypeStore {
     if (this.typeList.length > 0 && !flag) {
       return;
     }
-    let typeList = await http.post('/activity/activityTypeAll').then((res) => res);
+    let typeList = await http.post('/activity/activityTypeAll');
     runInAction(() => {
       this.typeList = typeList.data.data;
     });

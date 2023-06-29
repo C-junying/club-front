@@ -1,127 +1,126 @@
-import React, { useEffect, useState } from 'react'
-import { Menu } from 'antd'
-import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
-import HeanderTitle from '@/components/other/HeanderTitle'
-import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
-export default function MyClubIntro() {
+import React, { useEffect, useState } from 'react';
+import { Menu } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import HeanderTitle from '@/components/other/HeanderTitle';
+import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
+
+function MyClubIntro() {
+  // store
+  const { tokenStore, clubStore } = useRootStore();
   //   获取链接数据
-  const params = useParams()
-  const [manage, setManage] = useState({})
+  const params = useParams();
   useEffect(() => {
-    http.post('/users/getToken').then((res) => {
-      setManage(res.data.data)
-    })
-  }, [])
-  // 当前用户数据
-  // user
-  const [myUser, setMyUser] = useState({})
-  useEffect(() => {
-    http.post('/club/clubIdUserIdToBearName', params).then((res) => {
-      if (res.data.data.member.length > 0) {
-        setMyUser(res.data.data.member[0])
-      } else if (res.data.data.taecher.length > 0) {
-        setMyUser(res.data.data.taecher[0])
-      }
-    })
-  }, [params])
+    // 用户担任职位
+    clubStore.getUserBearPosition(params);
+  }, [params]);
   // 社团信息
-  const [clubInfo, setClubInfo] = useState({})
-  const items = []
-  if (JSON.stringify(myUser) === '{}' && manage.userId !== '000000') {
-    items.push({
-      label: '社团信息',
-      key: 'information',
-      icon: MyIcon('HomeOutlined'),
-    })
-  } else {
-    items.push(
-      {
+  const [clubInfo, setClubInfo] = useState({});
+  // 社团名称
+  const [title, setTitle] = useState('我的社团');
+  useEffect(() => {
+    if (clubStore.userClubList.length === 0) {
+      clubStore.getUserClubList();
+    }
+    const club = clubStore.getCurrentClub(params.clubId);
+    setClubInfo(club);
+    setTitle(club['club_name']);
+    // console.log(club);
+  }, [clubStore.userClubList]);
+  const items = [];
+  if (tokenStore.userInfo) {
+    if (JSON.stringify(clubStore.userPosition) === '{}' && tokenStore.userInfo.userId !== '000000') {
+      items.push({
         label: '社团信息',
         key: 'information',
         icon: MyIcon('HomeOutlined'),
-      },
-      {
-        label: '社团成员',
-        key: 'member',
-        icon: MyIcon('UserOutlined'),
-      },
-      {
-        label: '社团活动',
-        key: 'activity',
-        icon: MyIcon('AppstoreOutlined'),
-      },
-      {
-        label: '社团学期报告',
-        key: 'report',
-        icon: MyIcon('SolutionOutlined'),
-      }
-    )
-  }
-  if (
-    (myUser['bear_name'] === '社长' || myUser['bear_name'] === '副社长' || manage.userId === '000000') &&
-    clubInfo.state !== 2
-  ) {
-    items.push(
-      {
-        label: '申请活动',
-        key: 'apply-activity',
-        icon: MyIcon('AppstoreAddOutlined'),
-      },
-      {
-        label: '申请活动列表',
-        key: 'apply-activity-list',
-        icon: MyIcon('UnorderedListOutlined'),
-      }
-    )
-  }
-  if ((myUser['bear_name'] === '社长' || manage.userId === '000000') && clubInfo.state !== 2) {
-    items.push({
-      label: '申请资金',
-      key: 'apply-money',
-      icon: MyIcon('MoneyCollectOutlined'),
-    })
-  }
-  if (myUser['bear_name'] === '社长' || manage.userId === '000000') {
-    items.push(
-      {
-        label: '费用清单',
-        key: 'cost-list',
+      });
+    } else {
+      items.push(
+        {
+          label: '社团信息',
+          key: 'information',
+          icon: MyIcon('HomeOutlined'),
+        },
+        {
+          label: '社团成员',
+          key: 'member',
+          icon: MyIcon('UserOutlined'),
+        },
+        {
+          label: '社团活动',
+          key: 'activity',
+          icon: MyIcon('AppstoreOutlined'),
+        },
+        {
+          label: '社团学期报告',
+          key: 'report',
+          icon: MyIcon('SolutionOutlined'),
+        }
+      );
+    }
+    if (
+      (clubStore.userPosition['bear_name'] === '社长' ||
+        clubStore.userPosition['bear_name'] === '副社长' ||
+        tokenStore.userInfo.userId === '000000') &&
+      clubInfo.state !== 2
+    ) {
+      items.push(
+        {
+          label: '申请活动',
+          key: 'apply-activity',
+          icon: MyIcon('AppstoreAddOutlined'),
+        },
+        {
+          label: '申请活动列表',
+          key: 'apply-activity-list',
+          icon: MyIcon('UnorderedListOutlined'),
+        }
+      );
+    }
+    if (
+      (clubStore.userPosition['bear_name'] === '社长' || tokenStore.userInfo.userId === '000000') &&
+      clubInfo.state !== 2
+    ) {
+      items.push({
+        label: '申请资金',
+        key: 'apply-money',
         icon: MyIcon('MoneyCollectOutlined'),
-      },
-      {
-        label: '社团解散',
-        key: 'club-disband',
-        icon: MyIcon('DeleteOutlined'),
-      }
-    )
+      });
+    }
+    if (clubStore.userPosition['bear_name'] === '社长' || tokenStore.userInfo.userId === '000000') {
+      items.push(
+        {
+          label: '费用清单',
+          key: 'cost-list',
+          icon: MyIcon('MoneyCollectOutlined'),
+        },
+        {
+          label: '社团解散',
+          key: 'club-disband',
+          icon: MyIcon('DeleteOutlined'),
+        }
+      );
+    }
   }
   // 跳转
-  const navigate = useNavigate()
-  const location = useLocation()
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const path = location.pathname.split('/')
+  const path = location.pathname.split('/');
   // 设置顶部菜单的选中
-  const [current, setCurrent] = useState(path[path.length - 1])
+  const [current, setCurrent] = useState(path[path.length - 1]);
   useEffect(() => {
-    const currentPath = location.pathname.split('/')
-    setCurrent(currentPath[currentPath.length - 1])
-  }, [location.pathname])
-
-  // 社团名称
-  const [title, setTitle] = useState('我的社团')
-  useEffect(() => {
-    http.post('/club/clubIdClub', params).then((res) => {
-      setTitle(res.data.data[0]['club_name'])
-      setClubInfo(res.data.data[0])
-    })
-  }, [params])
+    const currentPath = location.pathname.split('/');
+    setCurrent(currentPath[currentPath.length - 1]);
+  }, [location.pathname]);
 
   // 顶部菜单点击响应
   const onClick = (e) => {
-    setCurrent(e.key)
-    navigate(e.key, { state: { myUser, clubInfo }, replace: true })
-  }
+    setCurrent(e.key);
+    navigate(e.key, { replace: true });
+  };
   return (
     <>
       <HeanderTitle title={title} onBack={() => navigate(-2)} />
@@ -134,5 +133,6 @@ export default function MyClubIntro() {
       />
       <Outlet />
     </>
-  )
+  );
 }
+export default observer(MyClubIntro);

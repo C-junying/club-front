@@ -14,7 +14,7 @@ class MenuStore {
     if (this.menuList.length > 0) {
       return;
     }
-    let menuList = await http.post('/menu/roleSelect').then((res) => res);
+    let menuList = await http.post('/menu/roleSelect');
     runInAction(() => {
       this.menuList = menuList.data.data;
     });
