@@ -18,9 +18,18 @@ function ClubMember() {
   //   获取链接数据
   const params = useParams();
   // 当前用户
-  const [myUser] = useState(clubStore.userPosition);
+  const [myUser, setMyUser] = useState({});
   // 社团信息
-  const [clubInfo] = useState(clubStore.getCurrentClub(params.clubId));
+  const [clubInfo, setClubInfo] = useState({});
+  // 当前用户信息
+  useEffect(() => {
+    setMyUser(clubStore.userPosition);
+  }, [clubStore.userPosition]);
+  // 获取当前社团信息
+  useEffect(() => {
+    setClubInfo(clubStore.currentClub);
+  }, [clubStore.currentClub]);
+  // 获取社团成员
   useEffect(() => {
     clubMemberStore.getAllMemberList(params);
   }, [params]);

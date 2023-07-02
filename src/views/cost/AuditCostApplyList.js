@@ -1,28 +1,26 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Tag, message, Form, Input, InputNumber } from 'antd'
-import { http } from '@/utils/http'
-import { toHump } from '@/utils/toHump'
-import { dateFormat } from '@/utils/time'
+import React, { useEffect, useState } from 'react';
+import { Button, Modal, Table, Tag, message, Form, Input, InputNumber } from 'antd';
+import { dateFormat } from '@/utils/time';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
 // 社团申请资金
-export default function AuditCostApplyList() {
+function AuditCostApplyList() {
+  // store
+  const { costProcessStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  // table
-  const [dataSource, setDataSource] = useState([])
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
-    http.post('/cost/getCostApplyAll').then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [])
+    costProcessStore.getAllApplyCostList();
+  }, []);
   const columns = [
     {
       title: '社团名称',
       dataIndex: 'club_name',
       key: 'club_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -30,7 +28,7 @@ export default function AuditCostApplyList() {
       dataIndex: 'user_name',
       key: 'user_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -43,7 +41,7 @@ export default function AuditCostApplyList() {
       dataIndex: 'apply_time',
       key: 'apply_time',
       render: (time) => {
-        return dateFormat(time)
+        return dateFormat(time);
       },
     },
     {
@@ -52,11 +50,11 @@ export default function AuditCostApplyList() {
       key: 'apply_state',
       render: (state) => {
         if (state === 0) {
-          return <Tag color="processing">审核中</Tag>
+          return <Tag color="processing">审核中</Tag>;
         } else if (state === 1) {
-          return <Tag color="success">已通过</Tag>
+          return <Tag color="success">已通过</Tag>;
         } else {
-          return <Tag color="error">未通过</Tag>
+          return <Tag color="error">未通过</Tag>;
         }
       },
     },
@@ -79,48 +77,40 @@ export default function AuditCostApplyList() {
         </div>
       ),
     },
-  ]
+  ];
   // 处理状态
   const handleState = (item, state) => {
-    setApplyState(state)
-    setAuditOpen(true)
-    auditForm.setFieldsValue(item)
-  }
+    setApplyState(state);
+    setAuditOpen(true);
+    auditForm.setFieldsValue(item);
+  };
   // 审核状态
-  const [applyState, setApplyState] = useState(0)
-  const [auditForm] = Form.useForm()
+  const [applyState, setApplyState] = useState(0);
+  const [auditForm] = Form.useForm();
   // 回复内容弹出框
-  const [auditOpen, setAuditOpen] = useState(false)
+  const [auditOpen, setAuditOpen] = useState(false);
 
-  // 审核社团
+  // 审核社团费用申请
   const handleAudit = () => {
     auditForm
       .validateFields()
       .then((values) => {
-        values['apply_state'] = applyState
-        http.post('/cost/auditCostApply', toHump(values)).then((res) => {
-          setApplyState(0)
-          setDataSource(
-            dataSource.map((item) => {
-              if (item['apply_id'] === values['apply_id']) {
-                item['apply_state'] = values['apply_state']
-              }
-              return item
-            })
-          )
-          setAuditOpen(false)
-          auditForm.resetFields()
+        values['apply_state'] = applyState;
+        costProcessStore.auditClubCostApply(values).then((res) => {
+          setApplyState(0);
+          setAuditOpen(false);
+          auditForm.resetFields();
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   return (
     <div>
       {contextHolder}
@@ -134,7 +124,7 @@ export default function AuditCostApplyList() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: costProcessStore.auditApplyList.length,
           showTotal: (total) => `总共：${total}个`,
         }}
         expandable={{
@@ -155,7 +145,7 @@ export default function AuditCostApplyList() {
             </div>
           ),
         }}
-        dataSource={dataSource}
+        dataSource={costProcessStore.auditApplyList}
       />
       <Modal
         open={auditOpen}
@@ -163,16 +153,12 @@ export default function AuditCostApplyList() {
         okText="确认"
         cancelText="取消"
         onCancel={() => {
-          setAuditOpen(false)
-          setApplyState(0)
-          auditForm.resetFields()
+          setAuditOpen(false);
+          setApplyState(0);
+          auditForm.resetFields();
         }}
         onOk={() => handleAudit()}>
-        <Form
-          form={auditForm}
-          layout="vertical"
-          name="form_in_modal"
-          validateTrigger={['onBlur', 'onChange']}>
+        <Form form={auditForm} layout="vertical" name="form_in_modal" validateTrigger={['onBlur', 'onChange']}>
           <Form.Item name="apply_id" label="申请编号" hidden>
             <Input />
           </Form.Item>
@@ -214,5 +200,6 @@ export default function AuditCostApplyList() {
         </Form>
       </Modal>
     </div>
-  )
+  );
 }
+export default observer(AuditCostApplyList);

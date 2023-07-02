@@ -1,89 +1,93 @@
-import { useEffect, useState } from 'react'
-import { Form, Input, Button, message } from 'antd'
-import { useNavigate, useParams } from 'react-router-dom'
-import { http } from '@/utils/http'
-import { toHump } from '@/utils/toHump'
-import MyEditor from '@/components/other/MyEditor'
-import MyUpload from '@/components/other/MyUpload'
-import HeanderTitle from '@/components/other/HeanderTitle'
+import { useEffect, useState } from 'react';
+import { Form, Input, Button, message } from 'antd';
+import { useNavigate, useParams } from 'react-router-dom';
+import { http } from '@/utils/http';
+import { toHump } from '@/utils/toHump';
+import MyEditor from '@/components/other/MyEditor';
+import MyUpload from '@/components/other/MyUpload';
+import HeanderTitle from '@/components/other/HeanderTitle';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-export default function AddClubReport() {
-  const [form] = Form.useForm()
+function AddClubReport() {
+  // store
+  const { tokenStore, clubReportStore, clubStore } = useRootStore();
+  const [form] = Form.useForm();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  const navigate = useNavigate()
+  const [messageApi, contextHolder] = message.useMessage();
+  const navigate = useNavigate();
   //   获取参数
-  const params = useParams()
+  const params = useParams();
   // 内容
-  const [content, setContent] = useState('')
+  const [content, setContent] = useState('');
   // 判断内容是否是第一次加载
-  const [flag, setFlag] = useState(true)
+  const [flag, setFlag] = useState(true);
 
   // 显示图片地址
-  const [imageUrl, setImageUrl] = useState('')
-  const [loading, setLoading] = useState(false)
-
+  const [imageUrl, setImageUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  // 获取社团信息
   useEffect(() => {
-    Promise.all([
-      http.post('/club/clubIdClub', toHump(params)),
-      http.post('/users/getUserId', toHump(params)),
-    ]).then((res) => {
+    clubStore.currentClubDesciption(params);
+  }, []);
+  useEffect(() => {
+    if (tokenStore.userInfo && clubStore.currentClub) {
       let intro = {
-        club_id: res[0].data.data[0]['club_id'],
-        club_name: res[0].data.data[0]['club_name'],
-        user_id: res[1].data.data['user_id'],
-        user_name: res[1].data.data['user_name'],
-      }
-      form.setFieldsValue(intro)
-    })
-  }, [params, form])
+        club_id: clubStore.currentClub['club_id'],
+        club_name: clubStore.currentClub['club_name'],
+        user_id: tokenStore.userInfo.userId,
+        user_name: tokenStore.userInfo.userName,
+      };
+      form.setFieldsValue(intro);
+    }
+  }, [clubStore.currentClub, tokenStore.userInfo, form]);
   useEffect(() => {
     if (flag) {
-      setFlag(false)
+      setFlag(false);
     } else {
-      form.setFieldValue('report_content', content)
-      form.validateFields(['report_content'])
+      form.setFieldValue('report_content', content);
+      form.validateFields(['report_content']);
     }
-  }, [content])
+  }, [content]);
   // 设置内容
   const getContent = (val) => {
-    setContent(val)
-  }
+    setContent(val);
+  };
   // 上传图片
   const imageHandleChange = (info) => {
     if (Array.isArray(info)) {
-      return info
+      return info;
     }
     // 上传中
     if (info.file.status === 'uploading') {
-      setLoading(true)
+      setLoading(true);
     }
     // 上传成功
     if (info.file.status === 'done') {
-      setLoading(false)
+      setLoading(false);
       // 让图片显示
-      setImageUrl(info.file.response.data.img)
-      form.setFieldValue('picture', info.file.response.data.img)
+      setImageUrl(info.file.response.data.img);
+      form.setFieldValue('picture', info.file.response.data.img);
     }
-    return info && info.fileList
-  }
+    return info && info.fileList;
+  };
   const onFinish = (values) => {
-    console.log('Success:', values)
+    // console.log('Success:', values);
     if (values.picture === '' || values.picture === undefined) {
-      messageApi.error('代表图没有上传')
+      messageApi.error('代表图没有上传');
     } else {
-      http.post('/club/addReport', toHump(values)).then((res) => {
+      clubReportStore.captainAddClubReport(values).then((res) => {
         if (res.data.code === 200) {
-          messageApi.success(res.data.msg)
+          messageApi.success(res.data.msg);
           setTimeout(() => {
-            navigate(-1)
-          }, 1000)
+            navigate(-1);
+          }, 1000);
         } else {
-          messageApi.error(res.data.msg)
+          messageApi.error(res.data.msg);
         }
-      })
+      });
     }
-  }
+  };
   return (
     <>
       {contextHolder}
@@ -172,5 +176,6 @@ export default function AddClubReport() {
         </Form.Item>
       </Form>
     </>
-  )
+  );
 }
+export default observer(AddClubReport);

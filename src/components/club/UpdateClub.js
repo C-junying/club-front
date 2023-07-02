@@ -1,90 +1,91 @@
-import { useEffect, useState } from 'react'
-import { Form, Input, Button, message, Select } from 'antd'
-import { useNavigate, useParams } from 'react-router-dom'
-import { http } from '@/utils/http'
-import { toHump } from '@/utils/toHump'
-import MyEditor from '@/components/other/MyEditor'
-import MyUpload from '@/components/other/MyUpload'
-import HeanderTitle from '@/components/other/HeanderTitle'
+import { useEffect, useState } from 'react';
+import { Form, Input, Button, message, Select } from 'antd';
+import { useNavigate, useParams } from 'react-router-dom';
+import MyEditor from '@/components/other/MyEditor';
+import MyUpload from '@/components/other/MyUpload';
+import HeanderTitle from '@/components/other/HeanderTitle';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-export default function UpdateClub() {
-  const [form] = Form.useForm()
+function UpdateClub() {
+  // store
+  const { clubTypeStore, clubStore } = useRootStore();
+  const [form] = Form.useForm();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  const navigate = useNavigate()
+  const [messageApi, contextHolder] = message.useMessage();
+  const navigate = useNavigate();
   //   获取参数
-  const params = useParams()
+  const params = useParams();
   // 内容
-  const [content, setContent] = useState('')
-  // 类型列表
-  const [typeList, setTypeList] = useState([])
+  const [content, setContent] = useState('');
+
   // 判断内容是否是第一次加载
-  const [flag, setFlag] = useState(true)
+  const [flag, setFlag] = useState(true);
 
   // 显示图片地址
-  const [imageUrl, setImageUrl] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [imageUrl, setImageUrl] = useState('');
+  const [loading, setLoading] = useState(false);
 
+  // 获取社团信息
   useEffect(() => {
-    http.post('/club/clubIdClub', toHump(params)).then((res) => {
-      setContent(res.data.data[0]['club_content'])
-      setImageUrl(res.data.data[0].picture)
-      form.setFieldsValue(res.data.data[0])
-    })
-  }, [params, form])
+    clubStore.currentClubDesciption(params);
+  }, []);
+  useEffect(() => {
+    setContent(clubStore.currentClub['club_content']);
+    setImageUrl(clubStore.currentClub.picture);
+    form.setFieldsValue(clubStore.currentClub);
+  }, [clubStore.currentClub, form]);
   //   社团类型
   useEffect(() => {
-    http.post('/club/clubTypeAll').then((res) => {
-      setTypeList(res.data.data)
-    })
-  }, [])
+    clubTypeStore.getAllTypeList();
+  }, []);
   useEffect(() => {
     if (flag) {
-      setFlag(false)
+      setFlag(false);
     } else {
-      form.setFieldValue('club_content', content)
-      form.validateFields(['club_content'])
+      form.setFieldValue('club_content', content);
+      form.validateFields(['club_content']);
     }
-  }, [content])
+  }, [content]);
   // 设置内容
   const getContent = (val) => {
-    setContent(val)
-  }
+    setContent(val);
+  };
   // 上传图片
   const imageHandleChange = (info) => {
     if (Array.isArray(info)) {
-      return info
+      return info;
     }
     // 上传中
     if (info.file.status === 'uploading') {
-      setLoading(true)
+      setLoading(true);
     }
     // 上传成功
     if (info.file.status === 'done') {
-      setLoading(false)
+      setLoading(false);
       // 让图片显示
-      setImageUrl(info.file.response.data.img)
-      form.setFieldValue('picture', info.file.response.data.img)
+      setImageUrl(info.file.response.data.img);
+      form.setFieldValue('picture', info.file.response.data.img);
     }
-    return info && info.fileList
-  }
+    return info && info.fileList;
+  };
   const onFinish = (values) => {
-    console.log('Success:', values)
+    // console.log('Success:', values);
     if (values.picture === '' || values.picture === undefined) {
-      messageApi.error('代表图没有上传')
+      messageApi.error('代表图没有上传');
     } else {
-      http.post('/club/updateClubInfo', toHump(values)).then((res) => {
+      clubStore.updateClub(values).then((res) => {
         if (res.data.code === 200) {
-          messageApi.success(res.data.msg)
+          messageApi.success(res.data.msg);
           setTimeout(() => {
-            navigate(-1)
-          }, 1000)
+            navigate(-1);
+          }, 1000);
         } else {
-          messageApi.error(res.data.msg)
+          messageApi.error(res.data.msg);
         }
-      })
+      });
     }
-  }
+  };
   return (
     <>
       {contextHolder}
@@ -116,7 +117,7 @@ export default function UpdateClub() {
               width: 150,
             }}
             fieldNames={{ label: 'type_name', value: 'type_id' }}
-            options={typeList}
+            options={clubTypeStore.typeList}
           />
         </Form.Item>
         <Form.Item
@@ -159,5 +160,6 @@ export default function UpdateClub() {
         </Form.Item>
       </Form>
     </>
-  )
+  );
 }
+export default observer(UpdateClub);

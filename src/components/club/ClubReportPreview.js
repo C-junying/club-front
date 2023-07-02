@@ -1,20 +1,22 @@
-import React, { useEffect, useState } from 'react'
-import HeanderTitle from '@/components/other/HeanderTitle'
-import { Descriptions, Image } from 'antd'
-import { http } from '@/utils/http'
-import { dateFormat } from '@/utils/time'
-import { useNavigate, useParams } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import HeanderTitle from '@/components/other/HeanderTitle';
+import { Descriptions, Image } from 'antd';
+import { dateFormat } from '@/utils/time';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useRootStore } from '@/stores/RootStore';
 // 展示社团报告
 export default function ClubReportPreview() {
+  // store
+  const { clubReportStore } = useRootStore();
   // 链接参数
-  const params = useParams()
-  const navigate = useNavigate()
-  const [clubReportInfo, setClubReportInfo] = useState(null)
+  const params = useParams();
+  const navigate = useNavigate();
+  const [clubReportInfo, setClubReportInfo] = useState(null);
   useEffect(() => {
-    http.post('/club/lookClubIdReportId', params).then((res) => {
-      setClubReportInfo(res.data.data[0])
-    })
-  }, [])
+    clubReportStore.getCurrentReport(params).then((res) => {
+      setClubReportInfo(res.data.data[0]);
+    });
+  }, []);
   return (
     <>
       {clubReportInfo && (
@@ -26,9 +28,7 @@ export default function ClubReportPreview() {
             </Descriptions.Item>
             <Descriptions.Item label="社团阶段">{clubReportInfo['stage_name']}</Descriptions.Item>
             <Descriptions.Item label="发起者">{clubReportInfo['user_name']}</Descriptions.Item>
-            <Descriptions.Item label="创建时间">
-              {dateFormat(clubReportInfo['create_time'])}
-            </Descriptions.Item>
+            <Descriptions.Item label="创建时间">{dateFormat(clubReportInfo['create_time'])}</Descriptions.Item>
             <Descriptions.Item label="报告主题" span={3}>
               {clubReportInfo['report_title']}
             </Descriptions.Item>
@@ -58,5 +58,5 @@ export default function ClubReportPreview() {
         </div>
       )}
     </>
-  )
+  );
 }

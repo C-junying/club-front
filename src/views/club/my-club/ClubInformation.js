@@ -12,12 +12,10 @@ function ClubInformation() {
   // store
   const { clubMemberStore, clubStore } = useRootStore();
 
-  const [applyClubInfo, setApplyClubInfo] = useState(null);
-  const [teacherInfo, setTeacherInfo] = useState(null);
+  const [applyClubInfo, setApplyClubInfo] = useState({});
+  const [teacherInfo, setTeacherInfo] = useState({});
   //   获取链接数据
   const params = useParams();
-  // user
-  // const [myUser, setMyUser] = useState({});
 
   const auditList = [
     <Tag color="processing">审核中</Tag>,
@@ -29,10 +27,12 @@ function ClubInformation() {
     <Tag color="success">已发布</Tag>,
     <Tag color="error">解散</Tag>,
   ];
+  // 获取当前社团信息
   useEffect(() => {
-    clubStore.currentClubDesciption(params).then((res) => {
-      setApplyClubInfo(res.data.data[0]);
-    });
+    setApplyClubInfo(clubStore.currentClub);
+  }, [clubStore.currentClub]);
+  // 获取社团的担任老师
+  useEffect(() => {
     clubStore.currentClubTeacher(params).then((teacher) => {
       setTeacherInfo(teacher.data.data[0]);
     });
@@ -59,8 +59,8 @@ function ClubInformation() {
     });
   };
   return (
-    <div>
-      {applyClubInfo && (
+    JSON.stringify(applyClubInfo) !== '{}' && (
+      <div>
         <Button
           type="primary"
           shape="round"
@@ -68,8 +68,6 @@ function ClubInformation() {
           hidden={applyClubInfo.state === 2 || (clubStore.userPosition['bear_name'] === '社长' ? false : true)}>
           <NavLink to={`update`}>更新社团信息</NavLink>
         </Button>
-      )}
-      {applyClubInfo && (
         <Button
           type="primary"
           shape="round"
@@ -78,8 +76,6 @@ function ClubInformation() {
           onClick={addMember}>
           加入社团
         </Button>
-      )}
-      {applyClubInfo && teacherInfo && (
         <div>
           <Descriptions size="small" column={3} bordered>
             <Descriptions.Item label="社长">{applyClubInfo['user_name']}</Descriptions.Item>
@@ -126,16 +122,13 @@ function ClubInformation() {
                 <div
                   dangerouslySetInnerHTML={{
                     __html: applyClubInfo['club_content'],
-                  }}
-                  style={{
-                    margin: '0 24px',
                   }}></div>
               }
             </Descriptions.Item>
           </Descriptions>
         </div>
-      )}
-    </div>
+      </div>
+    )
   );
 }
 export default observer(ClubInformation);

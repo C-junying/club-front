@@ -1,31 +1,28 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Table, Tag, Modal } from 'antd'
-import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
-import { dateFormat } from '@/utils/time'
-import { toHump } from '@/utils/toHump'
-import { useParams } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import { Button, Table, Tag, Modal } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import { dateFormat } from '@/utils/time';
+import { useParams } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
 // 社团费用
-export default function ClubCostList() {
-  // table
-  const [dataSource, setDataSource] = useState([])
+function ClubCostList() {
+  // store
+  const { costStore } = useRootStore();
   // 获取链接数据
-  const params = useParams()
+  const params = useParams();
+  // 获取社团费用
   useEffect(() => {
-    http.post('/cost/getClubCost', toHump(params)).then((res) => {
-      http.post('/cost/getPayName', res.data.data).then((temp) => {
-        setDataSource(temp.data.data)
-      })
-    })
-  }, [params])
+    costStore.getClubCostList(params);
+  }, [params]);
   const columns = [
     {
       title: '账单名',
       dataIndex: 'bill_name',
       key: 'bill_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -54,11 +51,11 @@ export default function ClubCostList() {
       key: 'pay_state',
       render: (state) => {
         if (state === 0) {
-          return <Tag color="processing">支付中</Tag>
+          return <Tag color="processing">支付中</Tag>;
         } else if (state === 1) {
-          return <Tag color="success">已支付</Tag>
+          return <Tag color="success">已支付</Tag>;
         } else {
-          return <Tag color="error">未支付</Tag>
+          return <Tag color="error">未支付</Tag>;
         }
       },
     },
@@ -68,9 +65,9 @@ export default function ClubCostList() {
       key: 'bill_type',
       render: (key) => {
         if (key === '收入') {
-          return <Tag color="success">{key}</Tag>
+          return <Tag color="success">{key}</Tag>;
         } else {
-          return <Tag color="error">{key}</Tag>
+          return <Tag color="error">{key}</Tag>;
         }
       },
     },
@@ -89,16 +86,16 @@ export default function ClubCostList() {
         </div>
       ),
     },
-  ]
+  ];
   //   账单信息
-  const [costOpen, setCostOpen] = useState(false)
-  const [billList, setBillList] = useState([])
+  const [costOpen, setCostOpen] = useState(false);
+  const [billList, setBillList] = useState([]);
   const getBillInfo = (item) => {
-    http.post('/cost/getCostToProject', toHump(item)).then((res) => {
-      setBillList(res.data.data)
-      setCostOpen(true)
-    })
-  }
+    costStore.getCurrentCost(item).then((res) => {
+      setBillList(res.data.data);
+      setCostOpen(true);
+    });
+  };
   return (
     <>
       <Table
@@ -111,7 +108,7 @@ export default function ClubCostList() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: costStore.clubCostList.length,
           showTotal: (total) => `总共：${total}个`,
         }}
         expandable={{
@@ -128,22 +125,22 @@ export default function ClubCostList() {
             </div>
           ),
         }}
-        dataSource={dataSource}
+        dataSource={costStore.clubCostList}
       />
       <Modal
         open={costOpen}
         title="账单信息"
         onCancel={() => {
-          setBillList([])
-          setCostOpen(false)
+          setBillList([]);
+          setCostOpen(false);
         }}
         footer={[
           <Button
             key="back"
             type="primary"
             onClick={() => {
-              setBillList([])
-              setCostOpen(false)
+              setBillList([]);
+              setCostOpen(false);
             }}>
             关闭
           </Button>,
@@ -174,12 +171,13 @@ export default function ClubCostList() {
             hideOnSinglePage: true,
             showSizeChanger: true,
             defaultPageSize: 10,
-            total: dataSource.length,
+            total: billList.length,
             showTotal: (total) => `总共：${total}个`,
           }}
           dataSource={billList}
         />
       </Modal>
     </>
-  )
+  );
 }
+export default observer(ClubCostList);

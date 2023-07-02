@@ -1,33 +1,31 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Tag, message, Form, Input, InputNumber } from 'antd'
-import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
-import { toHump } from '@/utils/toHump'
-import { dateFormat } from '@/utils/time'
-import { useParams } from 'react-router-dom'
-const { confirm } = Modal
+import React, { useEffect, useState } from 'react';
+import { Button, Modal, Table, Tag, message, Form, Input, InputNumber } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import { dateFormat } from '@/utils/time';
+import { useParams } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
+const { confirm } = Modal;
 // 社团申请资金
-export default function ApplyMoney() {
+function ApplyMoney() {
+  // store
+  const { costProcessStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  // table
-  const [dataSource, setDataSource] = useState([])
+  const [messageApi, contextHolder] = message.useMessage();
   // 获取链接数据
-  const params = useParams()
-
+  const params = useParams();
+  // 获取社团申请费用记录
   useEffect(() => {
-    http.post('/cost/getClubCostApply', params).then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [params])
+    costProcessStore.getClubApplyCostList(params);
+  }, [params]);
   const columns = [
     {
       title: '社团名称',
       dataIndex: 'club_name',
       key: 'club_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -35,7 +33,7 @@ export default function ApplyMoney() {
       dataIndex: 'user_name',
       key: 'user_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -48,7 +46,7 @@ export default function ApplyMoney() {
       dataIndex: 'apply_time',
       key: 'apply_time',
       render: (time) => {
-        return dateFormat(time)
+        return dateFormat(time);
       },
     },
     {
@@ -57,11 +55,11 @@ export default function ApplyMoney() {
       key: 'apply_state',
       render: (state) => {
         if (state === 0) {
-          return <Tag color="processing">审核中</Tag>
+          return <Tag color="processing">审核中</Tag>;
         } else if (state === 1) {
-          return <Tag color="success">已通过</Tag>
+          return <Tag color="success">已通过</Tag>;
         } else {
-          return <Tag color="error">未通过</Tag>
+          return <Tag color="error">未通过</Tag>;
         }
       },
     },
@@ -79,7 +77,7 @@ export default function ApplyMoney() {
         </div>
       ),
     },
-  ]
+  ];
   // 撤销社团的确认框
   const confirmMethod = (item) => {
     confirm({
@@ -89,47 +87,50 @@ export default function ApplyMoney() {
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        deleteMothed(item)
+        deleteMothed(item);
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   // 撤销申请社团操作
   const deleteMothed = (item) => {
     // 当前页面同步状态+后端同步
-    http.post('/cost/deleteCostApply', toHump(item)).then((res) => {
-      messageApi.success(res.data.msg)
-      setDataSource(dataSource.filter((data) => data['apply_id'] !== item['apply_id']))
-    })
-  }
+    costProcessStore.deleteClubApplyCost(item).then((res) => {
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg);
+      } else {
+        messageApi.error(res.data.msg);
+      }
+    });
+  };
   // 添加申请
-  const [costApplyOpen, setCostApplyOpen] = useState(false)
-  const [costApplyForm] = Form.useForm()
+  const [costApplyOpen, setCostApplyOpen] = useState(false);
+  const [costApplyForm] = Form.useForm();
   // 添加操作
   const addCostApplyFormOk = () => {
     costApplyForm
       .validateFields()
       .then((values) => {
-        values.clubId = params.clubId
-        http.post('/cost/addCostApply', toHump(values)).then((res) => {
-          setCostApplyOpen(false)
-          costApplyForm.resetFields()
+        values.clubId = params.clubId;
+        costProcessStore.addClubApplyCost(values).then((res) => {
+          setCostApplyOpen(false);
+          costApplyForm.resetFields();
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
             setTimeout(() => {
-              window.location.reload()
-            }, 1000)
+              window.location.reload();
+            }, 1000);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   return (
     <div>
       {contextHolder}
@@ -148,7 +149,7 @@ export default function ApplyMoney() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: costProcessStore.costApplyList.length,
           showTotal: (total) => `总共：${total}个`,
         }}
         expandable={{
@@ -169,7 +170,7 @@ export default function ApplyMoney() {
             </div>
           ),
         }}
-        dataSource={dataSource}
+        dataSource={costProcessStore.costApplyList}
       />
       <Modal
         open={costApplyOpen}
@@ -177,15 +178,11 @@ export default function ApplyMoney() {
         okText="添加"
         cancelText="取消"
         onCancel={() => {
-          setCostApplyOpen(false)
-          costApplyForm.resetFields()
+          setCostApplyOpen(false);
+          costApplyForm.resetFields();
         }}
         onOk={() => addCostApplyFormOk()}>
-        <Form
-          form={costApplyForm}
-          layout="vertical"
-          name="form_in_modal"
-          validateTrigger={['onBlur', 'onChange']}>
+        <Form form={costApplyForm} layout="vertical" name="form_in_modal" validateTrigger={['onBlur', 'onChange']}>
           <Form.Item
             name="apply_content"
             label="申请理由"
@@ -204,5 +201,6 @@ export default function ApplyMoney() {
         </Form>
       </Modal>
     </div>
-  )
+  );
 }
+export default observer(ApplyMoney);

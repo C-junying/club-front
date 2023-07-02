@@ -14,20 +14,19 @@ function MyClubIntro() {
   useEffect(() => {
     // 用户担任职位
     clubStore.getUserBearPosition(params);
-  }, [params]);
+  }, [clubStore.userPosition]);
+  useEffect(() => {
+    clubStore.currentClubDesciption(params);
+  }, []);
   // 社团信息
   const [clubInfo, setClubInfo] = useState({});
   // 社团名称
   const [title, setTitle] = useState('我的社团');
   useEffect(() => {
-    if (clubStore.userClubList.length === 0) {
-      clubStore.getUserClubList();
-    }
-    const club = clubStore.getCurrentClub(params.clubId);
+    const club = clubStore.currentClub;
     setClubInfo(club);
     setTitle(club['club_name']);
-    // console.log(club);
-  }, [clubStore.userClubList]);
+  }, [clubStore.currentClub]);
   const items = [];
   if (tokenStore.userInfo) {
     if (JSON.stringify(clubStore.userPosition) === '{}' && tokenStore.userInfo.userId !== '000000') {

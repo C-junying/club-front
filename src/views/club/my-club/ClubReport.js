@@ -1,36 +1,37 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, message } from 'antd'
-import { http } from '@/utils/http'
-import { toHump } from '@/utils/toHump'
-import { dateFormat } from '@/utils/time'
-import { MyIcon } from '@/utils/MyIcon'
-import { NavLink, useLocation, useParams } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import { Button, Modal, Table, message } from 'antd';
+import { dateFormat } from '@/utils/time';
+import { MyIcon } from '@/utils/MyIcon';
+import { NavLink, useParams } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { confirm } = Modal
+const { confirm } = Modal;
 // 学期报告
-export default function ClubReport() {
+function ClubReport() {
+  // store
+  const { clubReportStore, clubStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
+  const [messageApi, contextHolder] = message.useMessage();
   // 获取链接数据
-  const params = useParams()
-  const location = useLocation()
-  // table
-  const [dataSource, setDataSource] = useState([])
+  const params = useParams();
   // user
-  const [myUser, setMyUser] = useState({})
+  const [myUser, setMyUser] = useState({});
   // 社团信息
-  const [clubInfo, setClubInfo] = useState({})
+  const [clubInfo, setClubInfo] = useState({});
+  // 当前用户职位
   useEffect(() => {
-    http.post('/club/clubIdReportAll', toHump(params)).then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [params])
+    setMyUser(clubStore.userPosition);
+  }, [clubStore.userPosition]);
+  // 更新社团数据
   useEffect(() => {
-    // 获取当前用户的信息
-    // 获取传来的数据
-    setMyUser(location.state.myUser)
-    setClubInfo(location.state.clubInfo)
-  }, [location])
+    setClubInfo(clubStore.currentClub);
+  }, [clubStore.currentClub]);
+  // 获取社团报告
+  useEffect(() => {
+    clubReportStore.getAllClubReportList(params);
+  }, [params]);
+
   const columns = [
     {
       title: '总结主题',
@@ -41,7 +42,7 @@ export default function ClubReport() {
           <NavLink to={`preview/${item['report_id']}`}>
             <b>{key}</b>
           </NavLink>
-        )
+        );
       },
     },
     {
@@ -49,7 +50,7 @@ export default function ClubReport() {
       dataIndex: 'user_name',
       key: 'user_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -62,7 +63,7 @@ export default function ClubReport() {
       dataIndex: 'create_time',
       key: 'create_time',
       render: (key) => {
-        return dateFormat(key)
+        return dateFormat(key);
       },
     },
     {
@@ -70,7 +71,7 @@ export default function ClubReport() {
       dataIndex: 'picture',
       key: 'picture',
       render: (pic) => {
-        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : ''
+        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : '';
       },
     },
     {
@@ -91,7 +92,7 @@ export default function ClubReport() {
         />
       ),
     },
-  ]
+  ];
   // 删除报告的确认框
   const confirmMethod = (item) => {
     confirm({
@@ -101,21 +102,24 @@ export default function ClubReport() {
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        deleteMothed(item)
+        deleteMothed(item);
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   // 删除报告操作
   const deleteMothed = (item) => {
     // 当前页面同步状态+后端同步
-    http.post('/club/deleteReport', toHump(item)).then((res) => {
-      messageApi.success(res.data.msg)
-      setDataSource(dataSource.filter((data) => data['report_id'] !== item['report_id']))
-    })
-  }
+    clubReportStore.deleteClubReport(item).then((res) => {
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg);
+      } else {
+        messageApi.error(res.data.msg);
+      }
+    });
+  };
   return (
     <div>
       {contextHolder}
@@ -125,8 +129,7 @@ export default function ClubReport() {
         shape="round"
         style={{ marginBottom: 5 }}
         hidden={
-          ((myUser['bear_name'] === '社长' ? false : true) &&
-            (myUser['bear_name'] === '副社长' ? false : true)) ||
+          ((myUser['bear_name'] === '社长' ? false : true) && (myUser['bear_name'] === '副社长' ? false : true)) ||
           clubInfo.state === 2
         }>
         <NavLink to={`${myUser['user_id']}`}>添加报告</NavLink>
@@ -141,11 +144,12 @@ export default function ClubReport() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: clubReportStore.clubReportList.length,
           showTotal: (total) => `总共：${total}个`,
         }}
-        dataSource={dataSource}
+        dataSource={clubReportStore.clubReportList}
       />
     </div>
-  )
+  );
 }
+export default observer(ClubReport);

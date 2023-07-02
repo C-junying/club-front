@@ -1,20 +1,22 @@
-import { Button, Modal, message } from 'antd'
-import React, { useEffect, useState } from 'react'
-import { MyIcon } from '@/utils/MyIcon'
-import { http } from '@/utils/http'
-import { useParams } from 'react-router-dom'
+import { Button, Modal, message } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { MyIcon } from '@/utils/MyIcon';
+import { useParams } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-export default function ClubDisband() {
-  const params = useParams()
+function ClubDisband() {
+  // store
+  const { clubStore } = useRootStore();
+  const params = useParams();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
+  const [messageApi, contextHolder] = message.useMessage();
   // 社团信息
-  const [clubInfo, setClubInfo] = useState({})
+  const [clubInfo, setClubInfo] = useState({});
+  // 获取当前社团信息
   useEffect(() => {
-    http.post('/club/clubIdClub', params).then((res) => {
-      setClubInfo(res.data.data[0])
-    })
-  }, [params])
+    setClubInfo(clubStore.currentClub);
+  }, [clubStore.currentClub]);
   const confirmMethod = () => {
     Modal.confirm({
       title: '你确认解散吗?',
@@ -23,22 +25,22 @@ export default function ClubDisband() {
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        http.post('/club/clubDisband', params).then((res) => {
+        clubStore.clubDisband(params).then((res) => {
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
             setTimeout(() => {
-              window.location.reload()
-            }, 1000)
+              window.location.reload();
+            }, 1000);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   const alterClubState = () => {
     Modal.confirm({
       title: '你确认撤回解散吗?',
@@ -47,22 +49,22 @@ export default function ClubDisband() {
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        http.post('/club/alterclubDisband', params).then((res) => {
+        clubStore.cancleClubDisband(params).then((res) => {
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
             setTimeout(() => {
-              window.location.reload()
-            }, 1000)
+              window.location.reload();
+            }, 1000);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   return (
     <div className="danger-btn">
       {contextHolder}
@@ -77,5 +79,6 @@ export default function ClubDisband() {
         </Button>
       )}
     </div>
-  )
+  );
 }
+export default observer(ClubDisband);

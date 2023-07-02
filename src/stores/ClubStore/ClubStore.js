@@ -5,6 +5,7 @@ class ClubStore {
   clubList = [];
   userClubList = [];
   userPosition = {};
+  currentClub = {};
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
   }
@@ -14,7 +15,7 @@ class ClubStore {
     if (this.clubList.length > 0 && !flag) {
       return;
     }
-    let clubList = await http.post('/club/getClubsAll').then((res) => res);
+    let clubList = await http.post('/club/getClubsAll');
     runInAction(() => {
       this.clubList = clubList.data.data;
     });
@@ -25,21 +26,10 @@ class ClubStore {
     if (this.userClubList.length > 0) {
       return;
     }
-    let list = await http.post('/club/getUserClubs').then((res) => res);
+    let list = await http.post('/club/getUserClubs');
     runInAction(() => {
       this.userClubList = list.data.data;
     });
-  }
-  // 返回当前社团的信息
-  getCurrentClub(value) {
-    let current = {};
-    this.userClubList.forEach((val) => {
-      if (val['club_id'] === value) {
-        current = val;
-        return;
-      }
-    });
-    return current;
   }
   /**
    * @description: 返回用户在社团的职位
@@ -59,8 +49,11 @@ class ClubStore {
     });
   }
   // 当前社团的相关信息
-  currentClubDesciption(value) {
-    return http.post('/club/clubIdApplyClub', toHump(value));
+  async currentClubDesciption(value) {
+    let res = await http.post('/club/clubIdApplyClub', toHump(value));
+    runInAction(() => {
+      this.currentClub = res.data.data[0];
+    });
   }
   // 社团的担任老师
   currentClubTeacher(value) {
@@ -74,14 +67,8 @@ class ClubStore {
   }
   // 更新社团
   updateClub(value) {
-    this.clubList = this.clubList.map((item) => {
-      if (item['user_id'] === value['user_id']) {
-        return value;
-      }
-      return item;
-    });
-
-    return http.post('/users/update', toHump(value));
+    this.currentClub = { ...this.currentClub, ...value };
+    return http.post('/club/updateClubInfo', toHump(value));
   }
 
   // 社团查询
@@ -90,6 +77,14 @@ class ClubStore {
     runInAction(() => {
       this.clubList = clubList.data.data;
     });
+  }
+  // 解散社团
+  clubDisband(value) {
+    return http.post('/club/clubDisband', toHump(value));
+  }
+  // 撤回社团解散
+  cancleClubDisband(value) {
+    return http.post('/club/alterclubDisband', toHump(value));
   }
 }
 
