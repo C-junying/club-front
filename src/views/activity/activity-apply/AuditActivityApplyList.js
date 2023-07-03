@@ -1,23 +1,20 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Form, Tag, message, Input } from 'antd'
-import { http } from '@/utils/http'
-import { toHump } from '@/utils/toHump'
-import { dateFormat } from '@/utils/time'
-import { NavLink } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import { Button, Modal, Table, Form, Tag, message, Input } from 'antd';
+import { dateFormat } from '@/utils/time';
+import { NavLink } from 'react-router-dom';
+import AuditApplyComponent from '@/components/activity/AuditApplyComponent';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-import AuditApplyComponent from '@/components/activity/AuditApplyComponent'
-
-// 审核社团的操作
-export default function AuditActivityApplyList() {
+// 审核活动的操作
+function AuditActivityApplyList() {
+  // store
+  const { activityProcessStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  // table
-  const [dataSource, setDataSource] = useState([])
+  const [messageApi, contextHolder] = message.useMessage();
   useEffect(() => {
-    http.post('/activity/applyActivityAll').then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [])
+    activityProcessStore.getApplyActivityList();
+  }, []);
   const columns = [
     {
       title: '活动名称',
@@ -28,7 +25,7 @@ export default function AuditActivityApplyList() {
           <NavLink to={`preview/${item['activity_id']}`}>
             <b>{key}</b>
           </NavLink>
-        )
+        );
       },
     },
     {
@@ -41,7 +38,7 @@ export default function AuditActivityApplyList() {
       dataIndex: 'user_name',
       key: 'user_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -55,11 +52,11 @@ export default function AuditActivityApplyList() {
       key: 'apply_state',
       render: (state) => {
         if (state === 0) {
-          return <Tag color="processing">审核中</Tag>
+          return <Tag color="processing">审核中</Tag>;
         } else if (state === 1) {
-          return <Tag color="success">已通过</Tag>
+          return <Tag color="success">已通过</Tag>;
         } else {
-          return <Tag color="error">未通过</Tag>
+          return <Tag color="error">未通过</Tag>;
         }
       },
     },
@@ -82,58 +79,48 @@ export default function AuditActivityApplyList() {
         </div>
       ),
     },
-  ]
+  ];
   // 处理状态
   const handleState = (item, state) => {
-    setApplyState(state)
-    setAuditOpen(true)
-    auditForm.setFieldsValue(item)
-  }
+    setApplyState(state);
+    setAuditOpen(true);
+    auditForm.setFieldsValue(item);
+  };
   // 审核状态
-  const [applyState, setApplyState] = useState(0)
-  const [auditForm] = Form.useForm()
+  const [applyState, setApplyState] = useState(0);
+  const [auditForm] = Form.useForm();
   // 回复内容弹出框
-  const [auditOpen, setAuditOpen] = useState(false)
+  const [auditOpen, setAuditOpen] = useState(false);
 
   // 审核社团
   const handleAudit = () => {
     auditForm
       .validateFields()
       .then((values) => {
-        values['apply_state'] = applyState
-        http.post('/activity/auditApplyActivity', toHump(values)).then((res) => {
-          setApplyState(0)
-          setDataSource(
-            dataSource.map((item) => {
-              if (item['apply_id'] === values['apply_id']) {
-                item['apply_state'] = values['apply_state']
-              }
-              return item
-            })
-          )
-          setAuditOpen(false)
-          auditForm.resetFields()
+        values['apply_state'] = applyState;
+        activityProcessStore.auditActivity(values).then((res) => {
+          setApplyState(0);
+          setAuditOpen(false);
+          auditForm.resetFields();
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   // 搜索
   const onSearch = (value) => {
-    let href = '/activity/searchApplyActivity'
     if (value === '') {
-      href = '/activity/applyActivityAll'
+      activityProcessStore.getApplyActivityList(true);
+    } else {
+      activityProcessStore.getSearch(value);
     }
-    http.post(href, { keywords: value }).then((res) => {
-      setDataSource(res.data.data)
-    })
-  }
+  };
   return (
     <div>
       {contextHolder}
@@ -158,7 +145,7 @@ export default function AuditActivityApplyList() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: activityProcessStore.applyActivityList.length,
           showTotal: (total) => `总共：${total}个`,
         }}
         expandable={{
@@ -183,7 +170,7 @@ export default function AuditActivityApplyList() {
             </div>
           ),
         }}
-        dataSource={dataSource}
+        dataSource={activityProcessStore.applyActivityList}
       />
       <Modal
         open={auditOpen}
@@ -191,13 +178,14 @@ export default function AuditActivityApplyList() {
         okText="确认"
         cancelText="取消"
         onCancel={() => {
-          setAuditOpen(false)
-          setApplyState(0)
-          auditForm.resetFields()
+          setAuditOpen(false);
+          setApplyState(0);
+          auditForm.resetFields();
         }}
         onOk={() => handleAudit()}>
         <AuditApplyComponent form={auditForm} />
       </Modal>
     </div>
-  )
+  );
 }
+export default observer(AuditActivityApplyList);

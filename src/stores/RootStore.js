@@ -13,6 +13,10 @@ import ClubMemberStore from './ClubStore/ClubMemberStore';
 import ClubReportStore from './ClubStore/ClubReportStore';
 import CostStore from './CostStore/CostStore';
 import CostProcessStore from './CostStore/CostProcessStore';
+import ActivityProcessStore from './ActivityStore/ActivityProcessStore';
+import ActivityStore from './ActivityStore/ActivityStore';
+import ActivityMemberStore from './ActivityStore/ActivityMemberStore';
+import ActivityStageStore from './ActivityStore/ActivityStageStore';
 
 class RootStore {
   // 组合模块
@@ -41,6 +45,14 @@ class RootStore {
     this.clubReportStore = new ClubReportStore();
     // 活动类型
     this.activityTypeStore = new ActivityTypeStore();
+    // 活动申请
+    this.activityProcessStore = new ActivityProcessStore();
+    // 活动信息
+    this.activityStore = new ActivityStore();
+    // 活动成员
+    this.activityMemberStore = new ActivityMemberStore();
+    // 活动阶段
+    this.activityStageStore = new ActivityStageStore();
     // 费用
     this.costStore = new CostStore();
     // 费用申请

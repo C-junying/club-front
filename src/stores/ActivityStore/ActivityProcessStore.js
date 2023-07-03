@@ -3,70 +3,70 @@ import { http } from '@/utils/http';
 import { toHump } from '@/utils/toHump';
 // 社团申请流程
 class ActivityProcessStore {
-  userApplyClub = [];
-  applyClubList = [];
+  clubApplyActivity = [];
+  applyActivityList = [];
   // 判断是否重新请求用户申请列表
   bool = false;
   constructor() {
     makeAutoObservable(this, { bool: false }, { autoBind: true });
   }
-  // 申请社团
-  applyClub(value) {
+  // 活动申请
+  applyActivity(value) {
     this.bool = true;
-    return http.post('/club/addApplyClub', toHump(value));
+    return http.post('/activity/addActivityApply', toHump(value));
   }
-  // 返回当前用户申请列表
-  async getUserApplyClubList() {
-    if (this.userApplyClub.length > 0 && !this.bool) {
+  // 返回当前社团活动申请列表
+  async getClubApplyActivityList(value) {
+    if (this.clubApplyActivity.length > 0 && !this.bool) {
       return;
     }
     this.bool = false;
-    let list = await http.post('/club/userApplyClubAll');
+    let list = await http.post('/activity/clubApplyActivityAll', toHump(value));
     runInAction(() => {
-      this.userApplyClub = list.data.data;
+      this.clubApplyActivity = list.data.data;
     });
   }
-  // 撤销申请社团
-  deleteAppleClub(value) {
-    this.userApplyClub = this.userApplyClub.filter((data) => data['apply_id'] !== value['apply_id']);
-    return http.post('/club/deleteApplyClub', toHump(value));
+  // 撤销活动申请
+  deleteAppleActivity(value) {
+    this.clubApplyActivity = this.clubApplyActivity.filter((data) => data['activity_id'] !== value['activity_id']);
+    return http.post('/activity/deleteApplyActivity', toHump(value));
   }
-  // 发布社团
-  updateUserApplyClub(value) {
-    this.userApplyClub = this.userApplyClub.map((item) => {
+  // 发布活动
+  updateClubApplyActivity(value) {
+    this.clubApplyActivity = this.clubApplyActivity.map((item) => {
       if (item['apply_id'] === value['apply_id']) {
         return value;
       }
       return item;
     });
 
-    return http.post('/club/releaseClub', toHump(value));
+    return http.post('/activity/releaseActivity', toHump(value));
   }
-  // 所有社团申请,true强制请求，false不强制
-  async getApplyClubList(flag) {
-    if (this.applyClubList.length > 0 && !flag) {
+  // 所有活动申请,true强制请求，false不强制
+  async getApplyActivityList(flag) {
+    if (this.applyActivityList.length > 0 && !flag) {
       return;
     }
-    let list = await http.post('/club/applyClubAll');
+    let list = await http.post('/activity/applyActivityAll');
     runInAction(() => {
-      this.applyClubList = list.data.data;
+      this.applyActivityList = list.data.data;
     });
   }
-  // 审核社团
-  auditClub(value) {
-    this.applyClubList = this.applyClubList.map((item) => {
+  // 审核活动申请
+  auditActivity(value) {
+    this.applyActivityList = this.applyActivityList.map((item) => {
       if (item['apply_id'] === value['apply_id']) {
         item['apply_state'] = value['apply_state'];
       }
       return item;
     });
-    return http.post('/club/auditApplyClub', toHump(value));
+    return http.post('/activity/auditApplyActivity', toHump(value));
   }
   // 申请社团查询
   async getSearch(value) {
-    let list = await http.post('/club/searchApplyClub', { keywords: value });
+    let list = await http.post('/activity/searchApplyActivity', { keywords: value });
     runInAction(() => {
-      this.applyClubList = list.data.data;
+      this.applyActivityList = list.data.data;
     });
   }
 }

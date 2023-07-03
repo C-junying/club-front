@@ -1,88 +1,89 @@
-import React, { useEffect, useState } from 'react'
-import { Card, Col, Row, Button, Form, message, Modal } from 'antd'
-import { http } from '@/utils/http'
-import { toHump } from '@/utils/toHump'
-import { MyIcon } from '@/utils/MyIcon'
-import { group, flatten } from '@/utils/myMethod'
-import { useLocation, useParams } from 'react-router-dom'
-import { dateFormat } from '@/utils/time'
-import ActivityStageComponent from '@/components/activity/ActivityStageComponent'
+import React, { useEffect, useState } from 'react';
+import { Card, Col, Row, Button, Form, message, Modal } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import { group } from '@/utils/myMethod';
+import { useParams } from 'react-router-dom';
+import { dateFormat } from '@/utils/time';
+import ActivityStageComponent from '@/components/activity/ActivityStageComponent';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { confirm } = Modal
+const { confirm } = Modal;
 // 活动阶段
-export default function ActivityStage() {
+function ActivityStage() {
+  // store
+  const { activityStageStore, activityStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  // 表格数据
-  const [dataSource, setDataSource] = useState([])
+  const [messageApi, contextHolder] = message.useMessage();
   // 当前用户
-  const [myUser, setMyUser] = useState({})
+  const [myUser, setMyUser] = useState({});
   // 活动信息
-  const [activityInfo, setActivityInfo] = useState({})
+  const [activityInfo, setActivityInfo] = useState({});
   //   获取链接数据
-  const params = useParams()
-  const location = useLocation()
+  const params = useParams();
+  // 当前用户信息
   useEffect(() => {
-    // 获取当前用户的信息
-    // 获取传来的数据
-    setMyUser(location.state.myUser)
-    setActivityInfo(location.state.activityInfo)
-  }, [location])
-  // 获取活动信息
+    setMyUser(activityStore.userPosition);
+  }, [activityStore.userPosition]);
+  // 获取当前活动信息
+  useEffect(() => {
+    setActivityInfo(activityStore.currentActivity);
+  }, [activityStore.currentActivity]);
   // 获取数据
   useEffect(() => {
-    http.post('/activity/getActivityStage', params).then((res) => {
-      setDataSource(group(res.data.data, 3))
-    })
-  }, [params])
+    activityStageStore.getAllActivityStageList(params);
+    // .then((res) => {
+    //   setDataSource(group(res.data.data, 3))
+    // })
+  }, [params]);
   // 查看阶段弹出框
-  const [lookOpen, setLookOpen] = useState(false)
-  const [stageInfo, setStageInfo] = useState({})
+  const [lookOpen, setLookOpen] = useState(false);
+  const [stageInfo, setStageInfo] = useState({});
   // 添加阶段弹出框
-  const [open, setOpen] = useState(false)
-  const [form] = Form.useForm()
+  const [open, setOpen] = useState(false);
+  const [form] = Form.useForm();
 
   const addFormOk = () => {
     form
       .validateFields()
       .then((values) => {
-        values.activityId = params.activityId
+        values.activityId = params.activityId;
         if (values.time_string === '') {
-          messageApi.error('阶段时间没设置')
-          return
+          messageApi.error('阶段时间没设置');
+          return;
         } else {
-          let time = values.time_string.split('+')
-          values['start_time'] = time[0]
-          values['end_time'] = time[1]
-          delete values['time_test']
+          let time = values.time_string.split('+');
+          values['start_time'] = time[0];
+          values['end_time'] = time[1];
+          delete values['time_test'];
         }
         if (
           values['start_time'] < dateFormat(activityInfo['start_time']) ||
           values['start_time'] > dateFormat(activityInfo['end_time'])
         ) {
-          messageApi.error('阶段时间的开始时间小于活动的开展时间或大于结束时间')
-          return
+          messageApi.error('阶段时间的开始时间小于活动的开展时间或大于结束时间');
+          return;
         } else if (values['end_time'] > dateFormat(activityInfo['end_time'])) {
-          messageApi.error('阶段时间的结束时间大于活动的结束时间')
-          return
+          messageApi.error('阶段时间的结束时间大于活动的结束时间');
+          return;
         }
-        http.post('/activity/addActivityStage', toHump(values)).then((res) => {
-          setOpen(false)
-          form.resetFields()
+        activityStageStore.captainAddActivityStage(values).then((res) => {
+          setOpen(false);
+          form.resetFields();
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
             setTimeout(() => {
-              window.location.reload()
-            }, 1000)
+              window.location.reload();
+            }, 1000);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   // 删除阶段
   const confirmMethod = (item) => {
     confirm({
@@ -92,33 +93,31 @@ export default function ActivityStage() {
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        deleteMothed(item)
+        deleteMothed(item);
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   // 删除阶段操作
   const deleteMothed = (item) => {
-    console.log(item)
+    // console.log(item)
     // 当前页面同步状态+后端同步
-    http.post('/activity/deleteActivityStage', toHump({ stage_id: item, ...params })).then((res) => {
-      setDataSource(
-        group(
-          flatten(dataSource).filter((data) => data['stage_id'] !== item),
-          3
-        )
-      )
-      messageApi.success(res.data.msg)
-    })
-  }
+    activityStageStore.deleteActivityStage({ stage_id: item, ...params }).then((res) => {
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg);
+      } else {
+        messageApi.error(res.data.msg);
+      }
+    });
+  };
   const onClick = (item) => {
-    http.post('/activity/getStageInfo', toHump({ stage_id: item })).then((res) => {
-      setLookOpen(true)
-      setStageInfo(res.data.data[0])
-    })
-  }
+    activityStageStore.getCurrentReport({ stage_id: item }).then((res) => {
+      setLookOpen(true);
+      setStageInfo(res.data.data[0]);
+    });
+  };
 
   return (
     <>
@@ -128,22 +127,18 @@ export default function ActivityStage() {
           type="primary"
           shape="round"
           onClick={() => setOpen(true)}
-          hidden={
-            (myUser['bear_name'] === '活动负责人' ? false : true) || activityInfo['activity_state'] === 2
-          }>
+          hidden={(myUser['bear_name'] === '活动负责人' ? false : true) || activityInfo['activity_state'] === 2}>
           添加阶段
         </Button>
         <div></div>
       </div>
-      {dataSource.map((row, idx) => {
+      {group(activityStageStore.activityStageList, 3).map((row, idx) => {
         return (
           <Row gutter={32} key={idx} style={{ marginBottom: 20, marginLeft: 25 }}>
             {row.map((activity) => {
               return (
                 <Col span={7} key={activity['stage_id']}>
-                  <Card
-                    title={activity['stage_name']}
-                    style={{ background: '#FAFAFAD0', textAlign: 'center' }}>
+                  <Card title={activity['stage_name']} style={{ background: '#FAFAFAD0', textAlign: 'center' }}>
                     <p>
                       <b>开始时间：</b>
                       {dateFormat(activity['start_time'])}
@@ -172,10 +167,10 @@ export default function ActivityStage() {
                     ,
                   </Card>
                 </Col>
-              )
+              );
             })}
           </Row>
-        )
+        );
       })}
       <Modal
         open={open}
@@ -183,8 +178,8 @@ export default function ActivityStage() {
         okText="添加"
         cancelText="取消"
         onCancel={() => {
-          setOpen(false)
-          form.resetFields()
+          setOpen(false);
+          form.resetFields();
         }}
         onOk={() => addFormOk()}>
         <ActivityStageComponent form={form} />
@@ -193,8 +188,8 @@ export default function ActivityStage() {
         open={lookOpen}
         title="查看阶段信息"
         onCancel={() => {
-          setLookOpen(false)
-          setStageInfo({})
+          setLookOpen(false);
+          setStageInfo({});
         }}
         footer={null}>
         <p>
@@ -207,5 +202,6 @@ export default function ActivityStage() {
         </p>
       </Modal>
     </>
-  )
+  );
 }
+export default observer(ActivityStage);

@@ -1,41 +1,35 @@
-import React, { useEffect, useState } from 'react'
-import { Descriptions, Tag, Image, Button, Modal } from 'antd'
-import { useParams } from 'react-router-dom'
-import { http } from '@/utils/http'
-import { dateFormat } from '@/utils/time'
-import { MyIcon } from '@/utils/MyIcon'
+import React, { useEffect, useState } from 'react';
+import { Descriptions, Tag, Image, Button, Modal } from 'antd';
+import { useParams } from 'react-router-dom';
+import { dateFormat } from '@/utils/time';
+import { MyIcon } from '@/utils/MyIcon';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { confirm } = Modal
+const { confirm } = Modal;
 // 活动信息
-export default function ActivityInformation() {
-  const [applyActivityInfo, setApplyActivityInfo] = useState(null)
-  const [teacherInfo, setTeacherInfo] = useState(null)
+function ActivityInformation() {
+  // store
+  const { activityMemberStore, activityStore } = useRootStore();
+  const [applyActivityInfo, setApplyActivityInfo] = useState({});
+  const [teacherInfo, setTeacherInfo] = useState({});
   //   获取链接数据
-  const params = useParams()
-  // 当前用户
-  const [myUser, setMyUser] = useState({})
-  useEffect(() => {
-    http.post('/activity/activityIdUserIdToBearName', params).then((res) => {
-      if (res.data.data.member.length > 0) {
-        setMyUser(res.data.data.member[0])
-      } else if (res.data.data.taecher.length > 0) {
-        setMyUser(res.data.data.taecher[0])
-      }
-    })
-  }, [params])
+  const params = useParams();
   const activityStateList = [
     <Tag color="processing">未发布</Tag>,
     <Tag color="success">已发布</Tag>,
     <Tag color="error">已结束</Tag>,
-  ]
+  ];
+  // 获取当前活动信息
   useEffect(() => {
-    http.post('/activity/activityIdApplyActivity', params).then((res) => {
-      http.post('/teacher/clubIdTeacher', { clubId: res.data.data[0]['activity_id'] }).then((teacher) => {
-        setApplyActivityInfo(res.data.data[0])
-        setTeacherInfo(teacher.data.data[0])
-      })
-    })
-  }, [params])
+    setApplyActivityInfo(activityStore.currentActivity);
+  }, [activityStore.currentActivity]);
+  // 获取活动的担任老师
+  useEffect(() => {
+    activityStore.currentActivityTeacher({ clubId: params.activityId }).then((teacher) => {
+      setTeacherInfo(teacher.data.data[0]);
+    });
+  }, [params]);
   // 参加活动
   const addMember = () => {
     confirm({
@@ -44,33 +38,32 @@ export default function ActivityInformation() {
       okText: '参加',
       cancelText: '取消',
       onOk() {
-        http.post('/activity/userJoinMember', params).then((res) => {
-          alert(res.data.msg)
+        activityMemberStore.addActivityMember(params).then((res) => {
+          alert(res.data.msg);
           setTimeout(() => {
-            window.location.reload()
-          }, 1000)
-        })
+            window.location.reload();
+          }, 1000);
+        });
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   return (
-    <div>
-      {applyActivityInfo && (
+    JSON.stringify(applyActivityInfo) !== '{}' && (
+      <div>
         <Button
           type="primary"
           shape="round"
           style={{ marginBottom: 5 }}
           hidden={
-            applyActivityInfo['activity_state'] === 2 || (JSON.stringify(myUser) === '{}' ? false : true)
+            applyActivityInfo['activity_state'] === 2 ||
+            (JSON.stringify(activityStore.userPosition) === '{}' ? false : true)
           }
           onClick={addMember}>
           参加活动
         </Button>
-      )}
-      {applyActivityInfo && (
         <div>
           <Descriptions size="small" column={3} bordered>
             <Descriptions.Item label="活动负责人" style={{ width: 200 }}>
@@ -78,9 +71,7 @@ export default function ActivityInformation() {
             </Descriptions.Item>
             <Descriptions.Item label="活动名称">{applyActivityInfo['activity_title']}</Descriptions.Item>
             <Descriptions.Item label="活动来源">{applyActivityInfo['club_name']}</Descriptions.Item>
-            <Descriptions.Item label="发布时间">
-              {dateFormat(applyActivityInfo['release_time'])}
-            </Descriptions.Item>
+            <Descriptions.Item label="发布时间">{dateFormat(applyActivityInfo['release_time'])}</Descriptions.Item>
             <Descriptions.Item label="使用场地">{applyActivityInfo['area_name']}</Descriptions.Item>
 
             <Descriptions.Item label="发布状态">
@@ -126,9 +117,6 @@ export default function ActivityInformation() {
                 <div
                   dangerouslySetInnerHTML={{
                     __html: applyActivityInfo['activity_content'],
-                  }}
-                  style={{
-                    margin: '0 24px',
                   }}></div>
               }
             </Descriptions.Item>
@@ -142,15 +130,13 @@ export default function ActivityInformation() {
                 <div
                   dangerouslySetInnerHTML={{
                     __html: applyActivityInfo['activity_report'],
-                  }}
-                  style={{
-                    margin: '0 24px',
                   }}></div>
               }
             </Descriptions.Item>
           </Descriptions>
         </div>
-      )}
-    </div>
-  )
+      </div>
+    )
+  );
 }
+export default observer(ActivityInformation);

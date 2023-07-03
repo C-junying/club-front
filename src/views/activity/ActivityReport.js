@@ -1,64 +1,90 @@
-import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { Form, message, Button, Descriptions } from 'antd'
-import MyEditor from '@/components/other/MyEditor'
-import { http } from '@/utils/http'
-import { toHump } from '@/utils/toHump'
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Form, message, Modal, Button, Descriptions } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import MyEditor from '@/components/other/MyEditor';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
 // 活动总结
-export default function ActivityReport() {
+function ActivityReport() {
+  // store
+  const { activityStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
+  const [messageApi, contextHolder] = message.useMessage();
 
   //   获取链接数据
-  const params = useParams()
+  const params = useParams();
+  // 当前用户
+  const [myUser, setMyUser] = useState({});
   // 活动信息
-  const [activityInfo, setActivityInfo] = useState({})
-
-  // 获取数据
+  const [activityInfo, setActivityInfo] = useState({});
+  // 当前用户信息
   useEffect(() => {
-    http.post('/activity/activityIdInfo', params).then((res) => {
-      setActivityInfo(res.data.data[0])
-    })
-  }, [params])
+    setMyUser(activityStore.userPosition);
+  }, [activityStore.userPosition]);
+  // 获取当前活动信息
+  useEffect(() => {
+    setActivityInfo(activityStore.currentActivity);
+  }, [activityStore.currentActivity]);
   // 表单
-  const [form] = Form.useForm()
+  const [form] = Form.useForm();
   // 总结内容
-  const [content, setContent] = useState('')
+  const [content, setContent] = useState('');
   useEffect(() => {
     if (activityInfo['activity_state'] === 2) {
-      setContent(activityInfo['activity_report'])
+      setContent(activityInfo['activity_report']);
     }
-  }, [activityInfo])
+  }, [activityInfo]);
   useEffect(() => {
-    form.setFieldValue('activity_report', content)
-    form.validateFields(['activity_report'])
-  }, [content, form])
+    form.setFieldValue('activity_report', content);
+    form.validateFields(['activity_report']);
+  }, [content, form]);
   // 设置内容
   const getContent = (val) => {
-    setContent(val)
-  }
+    setContent(val);
+  };
   // 提交活动总结
   const submitActivityReport = () => {
     form.validateFields().then((values) => {
-      values['activity_id'] = params.activityId
-      http.post('/activity/addactivityReport', toHump(values)).then((res) => {
-        messageApi.success(res.data.msg)
-        setTimeout(() => {
-          window.location.reload()
-        }, 1000)
-      })
-    })
-  }
+      values['activity_id'] = params.activityId;
+      activityStore.activityReport(values).then((res) => {
+        if (res.data.code === 200) {
+          messageApi.success(res.data.msg);
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          messageApi.error(res.data.msg);
+        }
+      });
+    });
+  };
   // 撤回活动总结
   const alterAcitivityReport = () => {
-    http.post('/activity/alteractivityReport', toHump(params)).then((res) => {
-      messageApi.success(res.data.msg)
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
-    })
-  }
+    Modal.confirm({
+      title: '你确认撤回活动报告吗?',
+      icon: MyIcon('ExclamationCircleFilled'),
+      okText: '撤回',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk() {
+        activityStore.cancleActivityReport(params).then((res) => {
+          if (res.data.code === 200) {
+            messageApi.success(res.data.msg);
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            messageApi.error(res.data.msg);
+          }
+        });
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  };
   return (
     <>
       {contextHolder}
@@ -101,7 +127,7 @@ export default function ActivityReport() {
         <Button
           size="large"
           type="primary"
-          hidden={activityInfo['activity_state'] === 2}
+          hidden={(myUser['bear_name'] === '活动负责人' ? false : true) || activityInfo['activity_state'] === 2}
           onClick={submitActivityReport}>
           提交
         </Button>
@@ -109,11 +135,12 @@ export default function ActivityReport() {
           size="large"
           type="primary"
           danger
-          hidden={activityInfo['activity_state'] === 1}
+          hidden={(myUser['bear_name'] === '活动负责人' ? false : true) || activityInfo['activity_state'] === 1}
           onClick={alterAcitivityReport}>
           撤回
         </Button>
       </div>
     </>
-  )
+  );
 }
+export default observer(ActivityReport);

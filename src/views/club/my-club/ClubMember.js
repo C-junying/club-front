@@ -76,7 +76,12 @@ function ClubMember() {
             shape="circle"
             icon={MyIcon('DeleteOutlined')}
             onClick={() => confirmMethod(item)}
-            hidden={item['bear_name'] === '指导老师' || item['bear_name'] === '社长' || clubInfo.state === 2}
+            hidden={
+              (myUser['bear_name'] === '社长' ? false : true) ||
+              item['bear_name'] === '指导老师' ||
+              item['bear_name'] === '社长' ||
+              clubInfo.state === 2
+            }
           />
           <Button
             type="primary"
@@ -86,7 +91,12 @@ function ClubMember() {
               setMemberBearOpen(true);
               memberBearForm.setFieldsValue(item);
             }}
-            hidden={item['bear_name'] === '指导老师' || item['bear_name'] === '社长' || clubInfo.state === 2}
+            hidden={
+              (myUser['bear_name'] === '社长' ? false : true) ||
+              item['bear_name'] === '指导老师' ||
+              item['bear_name'] === '社长' ||
+              clubInfo.state === 2
+            }
           />
         </div>
       ),

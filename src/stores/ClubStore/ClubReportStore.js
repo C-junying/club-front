@@ -17,10 +17,6 @@ class ClubReportStore {
       this.clubReportList = clubReportList.data.data;
     });
   }
-  // 用户加入社团
-  addClubClubReport(value) {
-    return http.post('/club/userJoinClubReport', toHump(value));
-  }
   // 社长添加社团报告
   captainAddClubReport(value) {
     return http.post('/club/addReport', toHump(value));

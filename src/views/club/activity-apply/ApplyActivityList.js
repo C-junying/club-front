@@ -1,25 +1,23 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Tag, message } from 'antd'
-import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
-import { toHump } from '@/utils/toHump'
-import { dateFormat } from '@/utils/time'
-import { NavLink, useParams } from 'react-router-dom'
+import React, { useEffect } from 'react';
+import { Button, Modal, Table, Tag, message } from 'antd';
+import { MyIcon } from '@/utils/MyIcon';
+import { dateFormat } from '@/utils/time';
+import { NavLink, useParams } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { confirm } = Modal
+const { confirm } = Modal;
 // 申请活动的列表
-export default function ApplyActivityList() {
+function ApplyActivityList() {
+  // store
+  const { activityProcessStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  // table
-  const [dataSource, setDataSource] = useState([])
+  const [messageApi, contextHolder] = message.useMessage();
   // 获取链接数据
-  const params = useParams()
+  const params = useParams();
   useEffect(() => {
-    http.post('/activity/clubApplyActivityAll', toHump(params)).then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [params])
+    activityProcessStore.getClubApplyActivityList(params);
+  }, [params]);
   const columns = [
     {
       title: '活动名称',
@@ -30,7 +28,7 @@ export default function ApplyActivityList() {
           <NavLink to={`preview/${item['activity_id']}`}>
             <b>{key}</b>
           </NavLink>
-        )
+        );
       },
     },
     {
@@ -43,7 +41,7 @@ export default function ApplyActivityList() {
       dataIndex: 'user_name',
       key: 'user_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -57,11 +55,11 @@ export default function ApplyActivityList() {
       key: 'apply_state',
       render: (state) => {
         if (state === 0) {
-          return <Tag color="processing">审核中</Tag>
+          return <Tag color="processing">审核中</Tag>;
         } else if (state === 1) {
-          return <Tag color="success">已通过</Tag>
+          return <Tag color="success">已通过</Tag>;
         } else {
-          return <Tag color="error">未通过</Tag>
+          return <Tag color="error">未通过</Tag>;
         }
       },
     },
@@ -84,7 +82,7 @@ export default function ApplyActivityList() {
         </div>
       ),
     },
-  ]
+  ];
   // 撤销活动的确认框
   const confirmMethod = (item) => {
     confirm({
@@ -94,21 +92,24 @@ export default function ApplyActivityList() {
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        deleteMothed(item)
+        deleteMothed(item);
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   // 撤销申请活动操作
   const deleteMothed = (item) => {
     // 当前页面同步状态+后端同步
-    http.post('/activity/deleteApplyActivity', toHump(item)).then((res) => {
-      messageApi.success(res.data.msg)
-      setDataSource(dataSource.filter((data) => data['activity_id'] !== item['activity_id']))
-    })
-  }
+    activityProcessStore.deleteAppleActivity(item).then((res) => {
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg);
+      } else {
+        messageApi.error(res.data.msg);
+      }
+    });
+  };
   // 发布活动
   const publishClub = (item) => {
     confirm({
@@ -118,24 +119,20 @@ export default function ApplyActivityList() {
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        item['activity_state'] = 1
-        http.post('/activity/releaseActivity', toHump(item)).then((res) => {
-          messageApi.success(res.data.msg)
-          setDataSource(
-            dataSource.map((data) => {
-              if (data['apply_id'] === item['apply_id']) {
-                data['activity_state'] = 1
-              }
-              return data
-            })
-          )
-        })
+        item['activity_state'] = 1;
+        activityProcessStore.updateClubApplyActivity(item).then((res) => {
+          if (res.data.code === 200) {
+            messageApi.success(res.data.msg);
+          } else {
+            messageApi.error(res.data.msg);
+          }
+        });
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   return (
     <div>
       {contextHolder}
@@ -149,7 +146,7 @@ export default function ApplyActivityList() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: activityProcessStore.clubApplyActivity.length,
           showTotal: (total) => `总共：${total}个`,
         }}
         expandable={{
@@ -174,8 +171,9 @@ export default function ApplyActivityList() {
             </div>
           ),
         }}
-        dataSource={dataSource}
+        dataSource={activityProcessStore.clubApplyActivity}
       />
     </div>
-  )
+  );
 }
+export default observer(ApplyActivityList);

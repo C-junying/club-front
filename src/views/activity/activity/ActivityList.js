@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from 'react'
-import { Table, Input, Tag } from 'antd'
-import { http } from '@/utils/http'
-import { NavLink } from 'react-router-dom'
-import HeanderTitle from '@/components/other/HeanderTitle'
+import React, { useEffect } from 'react';
+import { Table, Input, Tag } from 'antd';
+import { NavLink } from 'react-router-dom';
+import HeanderTitle from '@/components/other/HeanderTitle';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { Search } = Input
+const { Search } = Input;
 // 活动列表
-export default function ActivityList() {
-  // 表格数据
-  const [dataSource, setDataSource] = useState([])
+function ActivityList() {
+  // store
+  const { activityStore } = useRootStore();
   useEffect(() => {
-    http.post('/activity/getManageActivityAll').then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [])
+    // 获取活动列表
+    activityStore.getAllActivityList();
+  }, []);
   const columns = [
     {
       title: '活动名称',
@@ -24,7 +24,7 @@ export default function ActivityList() {
           <NavLink to={`/activity/list/${item['activity_id']}/intro`}>
             <b>{key}</b>
           </NavLink>
-        )
+        );
       },
     },
     {
@@ -32,7 +32,7 @@ export default function ActivityList() {
       dataIndex: 'club_name',
       key: 'club_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -50,7 +50,7 @@ export default function ActivityList() {
       dataIndex: 'picture',
       key: 'picture',
       render: (pic) => {
-        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : ''
+        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : '';
       },
     },
     {
@@ -58,20 +58,19 @@ export default function ActivityList() {
       dataIndex: 'activity_state',
       key: 'activity_state',
       render: (state) => {
-        return state === 1 ? <Tag color="success">正在进行中</Tag> : <Tag color="default">已结束</Tag>
+        return state === 1 ? <Tag color="success">正在进行中</Tag> : <Tag color="default">已结束</Tag>;
       },
     },
-  ]
+  ];
   // 搜索
   const onSearch = (value) => {
-    let href = '/activity/searchActivity'
     if (value === '') {
-      href = '/activity/getManageActivityAll'
+      activityStore.getAllActivityList(true);
+    } else {
+      // 查询活动
+      activityStore.getSearch(value);
     }
-    http.post(href, { keywords: value }).then((res) => {
-      setDataSource(res.data.data)
-    })
-  }
+  };
   return (
     <>
       <div id="user_top" style={{ justifyContent: 'space-between' }}>
@@ -96,11 +95,12 @@ export default function ActivityList() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: activityStore.activityList.length,
           showTotal: (total) => `总共：${total}个`,
         }}
-        dataSource={dataSource}
+        dataSource={activityStore.activityList}
       />
     </>
-  )
+  );
 }
+export default observer(ActivityList);

@@ -2,9 +2,13 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { http } from '@/utils/http';
 import { toHump } from '@/utils/toHump';
 class ClubStore {
+  // 所有社团
   clubList = [];
+  // 用户加入的社团
   userClubList = [];
+  // 社团的职位
   userPosition = {};
+  // 当前社团
   currentClub = {};
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });

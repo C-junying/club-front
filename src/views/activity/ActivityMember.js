@@ -1,45 +1,47 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Modal, Table, Form, Input, message } from 'antd'
-import { http } from '@/utils/http'
-import { MyIcon } from '@/utils/MyIcon'
-import { toHump } from '@/utils/toHump'
-import { useParams, useLocation } from 'react-router-dom'
-import ActivityMemberConponent from '@/components/activity/ActivityMemberConponent'
+import React, { useEffect, useState } from 'react';
+import { Button, Modal, Table, Form, Input, message } from 'antd';
+import { http } from '@/utils/http';
+import { MyIcon } from '@/utils/MyIcon';
+import { toHump } from '@/utils/toHump';
+import { useParams } from 'react-router-dom';
+import ActivityMemberConponent from '@/components/activity/ActivityMemberConponent';
+import { observer } from 'mobx-react-lite';
+import { useRootStore } from '@/stores/RootStore';
 
-const { confirm } = Modal
-const { Search } = Input
+const { confirm } = Modal;
+const { Search } = Input;
 
 // 活动成员
-export default function ActivityMember() {
+function ActivityMember() {
+  // store
+  const { activityMemberStore, activityStore } = useRootStore();
   // 通知
-  const [messageApi, contextHolder] = message.useMessage()
-  // table
-  const [dataSource, setDataSource] = useState([])
+  const [messageApi, contextHolder] = message.useMessage();
   // 当前用户
-  const [myUser, setMyUser] = useState({})
+  const [myUser, setMyUser] = useState({});
   // 活动信息
-  const [activityInfo, setActivityInfo] = useState({})
+  const [activityInfo, setActivityInfo] = useState({});
   //   获取链接数据
-  const params = useParams()
-  const location = useLocation()
+  const params = useParams();
+  // 当前用户信息
   useEffect(() => {
-    // 获取当前用户的信息
-    // 获取传来的数据
-    setMyUser(location.state.myUser)
-    setActivityInfo(location.state.activityInfo)
-  }, [location])
+    setMyUser(activityStore.userPosition);
+  }, [activityStore.userPosition]);
+  // 获取当前活动信息
   useEffect(() => {
-    http.post('/activity/getActivityMember', toHump(params)).then((res) => {
-      setDataSource(res.data.data)
-    })
-  }, [params])
+    setActivityInfo(activityStore.currentActivity);
+  }, [activityStore.currentActivity]);
+  // 获取活动成员
+  useEffect(() => {
+    activityMemberStore.getAllMemberList(params);
+  }, [params]);
   const columns = [
     {
       title: '姓名',
       dataIndex: 'user_name',
       key: 'user_name',
       render: (key) => {
-        return <b>{key}</b>
+        return <b>{key}</b>;
       },
     },
     {
@@ -62,7 +64,7 @@ export default function ActivityMember() {
       dataIndex: 'picture',
       key: 'picture',
       render: (pic) => {
-        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : ''
+        return pic !== null && pic !== '' ? <img src={pic} alt="无" style={{ width: 50 }} /> : '';
       },
     },
     {
@@ -88,8 +90,8 @@ export default function ActivityMember() {
             shape="circle"
             icon={MyIcon('UnorderedListOutlined')}
             onClick={() => {
-              setMemberBearOpen(true)
-              memberBearForm.setFieldsValue(item)
+              setMemberBearOpen(true);
+              memberBearForm.setFieldsValue(item);
             }}
             hidden={
               (myUser['bear_name'] === '活动负责人' ? false : true) ||
@@ -101,90 +103,90 @@ export default function ActivityMember() {
         </div>
       ),
     },
-  ]
+  ];
   const confirmMethod = (item) => {
     confirm({
       title: '你确认删除吗?',
       icon: MyIcon('ExclamationCircleFilled'),
-      content: 'Some descriptions',
+      // content: 'Some descriptions',
       okText: '删除',
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        deleteMothed(item)
+        deleteMothed(item);
       },
       onCancel() {
-        console.log('Cancel')
+        console.log('Cancel');
       },
-    })
-  }
+    });
+  };
   // 删除用户操作
   const deleteMothed = (item) => {
     // 当前页面同步状态+后端同步
-    setDataSource(dataSource.filter((data) => data['user_id'] !== item['user_id']))
-    http.post('/activity/deleteMember', toHump(item))
-  }
+    activityMemberStore.deleteMember(item).then((res) => {
+      if (res.data.code === 200) {
+        messageApi.success(res.data.msg);
+      } else {
+        messageApi.error(res.data.msg);
+      }
+    });
+  };
   // 添加活动成员
-  const [memberOpen, setMemberOpen] = useState(false)
-  const [memberForm] = Form.useForm()
+  const [memberOpen, setMemberOpen] = useState(false);
+  const [memberForm] = Form.useForm();
   // 添加操作
   const addMemberFormOk = () => {
     memberForm
       .validateFields()
       .then((values) => {
-        values.activityId = params.activityId
-        http.post('/activity/addMember', toHump(values)).then((res) => {
-          setMemberOpen(false)
-          memberForm.resetFields()
+        values.activityId = params.activityId;
+        activityMemberStore.captainAddActivityMember(values).then((res) => {
+          setMemberOpen(false);
+          memberForm.resetFields();
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
+            messageApi.success(res.data.msg);
             setTimeout(() => {
-              window.location.reload()
-            }, 1000)
+              window.location.reload();
+            }, 1000);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   // 分配职位
-  const [memberBear, setMemberBearOpen] = useState(false)
-  const [memberBearForm] = Form.useForm()
+  const [memberBear, setMemberBearOpen] = useState(false);
+  const [memberBearForm] = Form.useForm();
 
   const memberBearFormOk = () => {
     memberBearForm
       .validateFields()
       .then((values) => {
-        http.post('/activity/updateMemberBear', toHump(values)).then((res) => {
-          setMemberBearOpen(false)
-          memberBearForm.resetFields()
+        activityMemberStore.updateMemberBear(values).then((res) => {
+          setMemberBearOpen(false);
+          memberBearForm.resetFields();
           if (res.data.code === 200) {
-            messageApi.success(res.data.msg)
-            setTimeout(() => {
-              window.location.reload()
-            }, 1000)
+            messageApi.success(res.data.msg);
           } else {
-            messageApi.error(res.data.msg)
+            messageApi.error(res.data.msg);
           }
-        })
+        });
       })
       .catch((info) => {
-        console.log('Validate Failed:', info)
-      })
-  }
+        console.log('Validate Failed:', info);
+      });
+  };
   // 搜索
   const onSearch = (value) => {
-    let href = '/activity/searchActivityMember'
     if (value === '') {
-      href = '/activity/getActivityMember'
+      activityMemberStore.getAllMemberList(params, true);
+    } else {
+      activityMemberStore.getSearch({ ...params, keywords: value });
     }
-    http.post(href, toHump({ ...params, keywords: value })).then((res) => {
-      setDataSource(res.data.data)
-    })
-  }
+  };
   return (
     <>
       {contextHolder}
@@ -194,9 +196,7 @@ export default function ActivityMember() {
             type="primary"
             shape="round"
             onClick={() => setMemberOpen(true)}
-            hidden={
-              (myUser['bear_name'] === '活动负责人' ? false : true) || activityInfo['activity_state'] === 2
-            }>
+            hidden={(myUser['bear_name'] === '活动负责人' ? false : true) || activityInfo['activity_state'] === 2}>
             添加成员
           </Button>
         </div>
@@ -219,10 +219,10 @@ export default function ActivityMember() {
           hideOnSinglePage: true,
           showSizeChanger: true,
           defaultPageSize: 5,
-          total: dataSource.length,
+          total: activityMemberStore.memberList.length,
           showTotal: (total) => `总共：${total}个`,
         }}
-        dataSource={dataSource}
+        dataSource={activityMemberStore.memberList}
       />
       <Modal
         open={memberOpen}
@@ -230,8 +230,8 @@ export default function ActivityMember() {
         okText="添加"
         cancelText="取消"
         onCancel={() => {
-          setMemberOpen(false)
-          memberForm.resetFields()
+          setMemberOpen(false);
+          memberForm.resetFields();
         }}
         onOk={() => addMemberFormOk()}>
         <ActivityMemberConponent form={memberForm} />
@@ -242,12 +242,13 @@ export default function ActivityMember() {
         okText="分配"
         cancelText="取消"
         onCancel={() => {
-          setMemberBearOpen(false)
-          memberBearForm.resetFields()
+          setMemberBearOpen(false);
+          memberBearForm.resetFields();
         }}
         onOk={() => memberBearFormOk()}>
         <ActivityMemberConponent form={memberBearForm} isDisabled={true} />
       </Modal>
     </>
-  )
+  );
 }
+export default observer(ActivityMember);

@@ -34,7 +34,7 @@ export default function MyEditor(props) {
       http
         .post('/images/uploadText', formData)
         .then((res) => {
-          console.log(res)
+          // console.log(res)
           if (res.data.code !== 200) {
             messageApi.error('图片上传失败')
             reject(res)
