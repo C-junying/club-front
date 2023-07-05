@@ -49,6 +49,9 @@ class ActivityMemberStore {
       this.memberList = memberList.data.data;
     });
   }
+  reset() {
+    this.memberList = [];
+  }
 }
 
 export default ActivityMemberStore;

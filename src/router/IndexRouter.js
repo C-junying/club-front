@@ -1,49 +1,55 @@
-import React from 'react'
-import { Navigate, useRoutes } from 'react-router-dom'
-import Login from '@/views/login/Login'
-import Register from '@/views/register/Register'
-import Index from '@/views/index/Index'
-import BackStage from '@/views/backstage/BackStage'
-import Home from '@/views/backstage/home/Home'
-import UserList from '@/views/backstage/user-manage/UserList'
-import RoleList from '@/views/backstage/right-manage/RoleList'
-import MenuList from '@/views/backstage/right-manage/MenuList'
-import Error from '@/components/back-stage/Error'
-import AuthRouter from './AuthRouter'
-import AreaList from '@/views/area/AreaList'
-import ClubList from '@/views/club/ClubList'
-import ActivityList from '@/views/activity/activity/ActivityList'
-import ClubTypeList from '@/views/club/club-type/ClubTypeList'
-import ActivityTypeList from '@/views/activity/activity-type/ActivityTypeList'
-import ClubApply from '@/views/club/club-apply/ClubApply'
-import ClubApplyList from '@/views/club/club-apply/ClubApplyList'
-import ClubPriview from '@/components/club/ClubPriview'
-import AuditApplyList from '@/views/club/club-apply/AuditApplyList'
-import TeacherList from '@/views/backstage/teacher/TeacherList'
-import MyClub from '@/views/club/my-club/MyClub'
-import MyClubIntro from '@/views/club/my-club/MyClubIntro'
-import ClubInformation from '@/views/club/my-club/ClubInformation'
-import ClubMember from '@/views/club/my-club/ClubMember'
-import ClubReport from '@/views/club/my-club/ClubReport'
-import ClubActivity from '@/views/club/activity-apply/ClubActivityList'
-import AddClubReport from '@/components/club/AddClubReport'
-import ClubReportPreview from '@/components/club/ClubReportPreview'
-import UpdateClub from '@/components/club/UpdateClub'
-import ClubDisband from '@/views/club/my-club/ClubDisband'
-import ApplyActivity from '@/views/club/activity-apply/ApplyActivity'
-import ApplyActivityList from '@/views/club/activity-apply/ApplyActivityList'
-import ApplyMoney from '@/views/club/my-club/ApplyMoney'
-import AuditCostApplyList from '@/views/cost/AuditCostApplyList'
-import CostList from '@/views/cost/CostList'
-import ClubCostList from '@/views/club/my-club/ClubCostList'
-import ActivityPriview from '@/components/activity/ActivityPriview'
-import AuditActivityApplyList from '@/views/activity/activity-apply/AuditActivityApplyList'
-import ActivityInfo from '@/views/activity/activity/ActivityInfo'
-import ActivityInformation from '@/views/activity/ActivityInformation'
-import ActivityMember from '@/views/activity/ActivityMember'
-import ActivityStage from '@/views/activity/ActivityStage'
-import ActivityReport from '@/views/activity/ActivityReport'
-import MyInformation from '@/views/backstage/user-manage/MyInformation'
+import React from 'react';
+import { Navigate, useRoutes } from 'react-router-dom';
+import Login from '@/views/login/Login';
+import Register from '@/views/register/Register';
+import Index from '@/views/index/Index';
+import BackStage from '@/views/backstage/BackStage';
+import Home from '@/views/backstage/home/Home';
+import UserList from '@/views/backstage/user-manage/UserList';
+import RoleList from '@/views/backstage/right-manage/RoleList';
+import MenuList from '@/views/backstage/right-manage/MenuList';
+import Error from '@/components/back-stage/Error';
+import AuthRouter from './AuthRouter';
+import AreaList from '@/views/area/AreaList';
+import ClubList from '@/views/club/ClubList';
+import ActivityList from '@/views/activity/activity/ActivityList';
+import ClubTypeList from '@/views/club/club-type/ClubTypeList';
+import ActivityTypeList from '@/views/activity/activity-type/ActivityTypeList';
+import ClubApply from '@/views/club/club-apply/ClubApply';
+import ClubApplyList from '@/views/club/club-apply/ClubApplyList';
+import ClubPriview from '@/components/club/ClubPriview';
+import AuditApplyList from '@/views/club/club-apply/AuditApplyList';
+import TeacherList from '@/views/backstage/teacher/TeacherList';
+import MyClub from '@/views/club/my-club/MyClub';
+import MyClubIntro from '@/views/club/my-club/MyClubIntro';
+import ClubInformation from '@/views/club/my-club/ClubInformation';
+import ClubMember from '@/views/club/my-club/ClubMember';
+import ClubReport from '@/views/club/my-club/ClubReport';
+import ClubActivity from '@/views/club/activity-apply/ClubActivityList';
+import AddClubReport from '@/components/club/AddClubReport';
+import ClubReportPreview from '@/components/club/ClubReportPreview';
+import UpdateClub from '@/components/club/UpdateClub';
+import ClubDisband from '@/views/club/my-club/ClubDisband';
+import ApplyActivity from '@/views/club/activity-apply/ApplyActivity';
+import ApplyActivityList from '@/views/club/activity-apply/ApplyActivityList';
+import ApplyMoney from '@/views/club/my-club/ApplyMoney';
+import AuditCostApplyList from '@/views/cost/AuditCostApplyList';
+import CostList from '@/views/cost/CostList';
+import ClubCostList from '@/views/club/my-club/ClubCostList';
+import ActivityPriview from '@/components/activity/ActivityPriview';
+import AuditActivityApplyList from '@/views/activity/activity-apply/AuditActivityApplyList';
+import ActivityInfo from '@/views/activity/activity/ActivityInfo';
+import ActivityInformation from '@/views/activity/ActivityInformation';
+import ActivityMember from '@/views/activity/ActivityMember';
+import ActivityStage from '@/views/activity/ActivityStage';
+import ActivityReport from '@/views/activity/ActivityReport';
+import MyInformation from '@/views/backstage/user-manage/MyInformation';
+import SystemIntro from '@/components/back-stage/SystemIntro';
+import MyActivity from '@/views/activity/activity/MyActivity';
+import HotActivity from '@/views/index/HotActivity';
+import HotClub from '@/views/index/HotClub';
+import IndexMyClub from '@/views/index/IndexMyClub';
+import IndexMyActivity from '@/views/index/IndexMyActivity';
 
 // const LazyLoad = (path) => { //传入在view 下的路径
 //   const Comp = React.lazy(() => import(`../view${path}`))
@@ -66,8 +72,20 @@ export default function IndexRouter() {
     },
     {
       path: '/',
-      // element: <Index />,
-      element: <Navigate to="backstage" />,
+      element: <Navigate to="/index" />,
+    },
+    {
+      path: '/index',
+      element: <Index />,
+      // element: <Navigate to="backstage" />,
+      children: [
+        { path: '', element: <Navigate to="system-intro" /> },
+        { path: 'system-intro', element: <SystemIntro /> },
+        { path: 'hot-activity', element: <HotActivity /> },
+        { path: 'hot-club', element: <HotClub /> },
+        { path: 'my-club', element: <IndexMyClub /> },
+        { path: 'my-activity', element: <IndexMyActivity /> },
+      ],
     },
     {
       path: '/backstage',
@@ -235,6 +253,36 @@ export default function IndexRouter() {
           ],
         },
         {
+          path: 'user-activity',
+          element: <MyActivity />,
+        },
+        {
+          path: 'user-activity/:activityId/intro',
+          element: <ActivityInfo />,
+          children: [
+            {
+              path: '',
+              element: <Navigate to="information" />,
+            },
+            {
+              path: 'information',
+              element: <ActivityInformation />,
+            },
+            {
+              path: 'member',
+              element: <ActivityMember />,
+            },
+            {
+              path: 'activity-stage',
+              element: <ActivityStage />,
+            },
+            {
+              path: 'report',
+              element: <ActivityReport />,
+            },
+          ],
+        },
+        {
           path: 'activity-type/list',
           element: <ActivityTypeList />,
         },
@@ -286,6 +334,6 @@ export default function IndexRouter() {
       path: '*',
       element: <Error />,
     },
-  ])
-  return routes
+  ]);
+  return routes;
 }

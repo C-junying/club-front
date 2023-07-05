@@ -90,6 +90,10 @@ class ClubStore {
   cancleClubDisband(value) {
     return http.post('/club/alterclubDisband', toHump(value));
   }
+  reset() {
+    this.userPosition = {};
+    this.currentClub = {};
+  }
 }
 
 export default ClubStore;

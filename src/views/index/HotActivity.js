@@ -1,33 +1,31 @@
 import React, { useEffect } from 'react';
 import { Card, Col, Row, Avatar, Tag } from 'antd';
 import { group } from '@/utils/myMethod';
-import { useNavigate, useParams } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { useRootStore } from '@/stores/RootStore';
-// 社团活动列表
-function ClubActivityList() {
+import { useNavigate } from 'react-router-dom';
+function HotActivity() {
   // store
-  const { activityStore } = useRootStore();
+  const { indexStore } = useRootStore();
   const navigate = useNavigate();
-  const params = useParams();
   useEffect(() => {
-    activityStore.getClubActivityList(params);
-  }, [params]);
+    indexStore.getAllActivity();
+  }, []);
   const onClick = (item) => {
-    navigate(`/activity/list/${item}/intro`);
+    navigate(`/activity/user-activity/${item}/intro`);
   };
   return (
     <>
-      {group(activityStore.clubActivityList, 3).map((row, idx) => {
+      {group(indexStore.activityList, 3).map((row, idx) => {
         return (
-          <Row gutter={32} key={idx} style={{ marginBottom: 20, marginLeft: 25 }}>
+          <Row gutter={32} key={idx} style={{ marginLeft: 10, padding: '20px 0' }}>
             {row.map((activity) => {
               return (
-                <Col span={6} key={activity['activity_id']} onClick={() => onClick(activity['activity_id'])}>
+                <Col span={8} key={activity['activity_id']} onClick={() => onClick(activity['activity_id'])}>
                   <Card
                     hoverable
-                    style={{ background: '#FAFAFAD0' }}
-                    cover={<img alt="example" src={activity['picture']} style={{ maxHeight: 150 }} />}>
+                    style={{ background: '#FAFAFAD0', minWidth: '280px', maxWidth: '300px' }}
+                    cover={<img alt="example" src={activity['picture']} style={{ height: 150 }} />}>
                     <div>
                       <div
                         style={{
@@ -69,4 +67,5 @@ function ClubActivityList() {
     </>
   );
 }
-export default observer(ClubActivityList);
+
+export default observer(HotActivity);

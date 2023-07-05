@@ -1,8 +1,26 @@
 .logo {
-    line-height: 32px;
-    color      : white;
-    margin     : 10px;
-    background : rgba(255, 255, 255, 0.2);
-    font-size  : 18px;
-    text-align : center;
+  line-height: 32px;
+  color: white;
+  margin: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 18px;
+  text-align: center;
+}
+#home-nav {
+  position: relative;
+  color: #000;
+}
+#home-nav:hover {
+  animation: upDown 0.5s ease-in-out;
+}
+@keyframes upDown {
+  0% {
+    bottom: 0;
+  }
+  50% {
+    bottom: 5px;
+  }
+  100% {
+    bottom: 0;
+  }
 }

@@ -10,25 +10,25 @@ export default function BackStage() {
   return (
     <Layout>
       <SideMenu />
-      <Layout>
+      <Layout style={{ marginLeft: 200 }}>
         <TopHeader />
         <Content
           style={{
-            margin: '24px 16px 0',
-            overflow: 'auto',
+            marginTop: '24px',
+            // overflow: 'auto',
             background: 'white',
           }}>
           <div
             style={{
+              minHeight: '78vh',
               padding: 18,
-              minHeight: 560,
               background: 'white',
             }}>
             {/* <BackStageRouter /> */}
             <Outlet />
           </div>
+          <BottomFooter />
         </Content>
-        <BottomFooter />
       </Layout>
     </Layout>
   );

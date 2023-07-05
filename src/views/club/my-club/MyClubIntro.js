@@ -8,20 +8,41 @@ import { useRootStore } from '@/stores/RootStore';
 
 function MyClubIntro() {
   // store
-  const { tokenStore, clubStore } = useRootStore();
+  const {
+    tokenStore,
+    clubStore,
+    clubMemberStore,
+    clubReportStore,
+    activityStore,
+    activityProcessStore,
+    costStore,
+    costProcessStore,
+  } = useRootStore();
   //   获取链接数据
   const params = useParams();
   useEffect(() => {
     // 用户担任职位
     clubStore.getUserBearPosition(params);
-  }, [clubStore.userPosition]);
+  }, []);
   useEffect(() => {
     clubStore.currentClubDesciption(params);
+  }, []);
+  // 清除数据
+  useEffect(() => {
+    return () => {
+      clubStore.reset();
+      clubMemberStore.reset();
+      clubReportStore.reset();
+      activityStore.reset();
+      activityProcessStore.reset();
+      costStore.reset();
+      costProcessStore.reset();
+    };
   }, []);
   // 社团信息
   const [clubInfo, setClubInfo] = useState({});
   // 社团名称
-  const [title, setTitle] = useState('我的社团');
+  const [title, setTitle] = useState('');
   useEffect(() => {
     const club = clubStore.currentClub;
     setClubInfo(club);
@@ -60,9 +81,7 @@ function MyClubIntro() {
       );
     }
     if (
-      (clubStore.userPosition['bear_name'] === '社长' ||
-        clubStore.userPosition['bear_name'] === '副社长' ||
-        tokenStore.userInfo.userId === '000000') &&
+      (clubStore.userPosition['bear_name'] === '社长' || clubStore.userPosition['bear_name'] === '副社长') &&
       clubInfo.state !== 2
     ) {
       items.push(
@@ -78,29 +97,30 @@ function MyClubIntro() {
         }
       );
     }
-    if (
-      (clubStore.userPosition['bear_name'] === '社长' || tokenStore.userInfo.userId === '000000') &&
-      clubInfo.state !== 2
-    ) {
+    if (clubStore.userPosition['bear_name'] === '社长' && clubInfo.state !== 2) {
       items.push({
         label: '申请资金',
         key: 'apply-money',
         icon: MyIcon('MoneyCollectOutlined'),
       });
     }
-    if (clubStore.userPosition['bear_name'] === '社长' || tokenStore.userInfo.userId === '000000') {
-      items.push(
-        {
-          label: '费用清单',
-          key: 'cost-list',
-          icon: MyIcon('MoneyCollectOutlined'),
-        },
-        {
-          label: '社团解散',
-          key: 'club-disband',
-          icon: MyIcon('DeleteOutlined'),
-        }
-      );
+    if (
+      clubStore.userPosition['bear_name'] === '社长' ||
+      clubStore.userPosition['bear_name'] === '副社长' ||
+      tokenStore.userInfo.userId === '000000'
+    ) {
+      items.push({
+        label: '费用清单',
+        key: 'cost-list',
+        icon: MyIcon('MoneyCollectOutlined'),
+      });
+    }
+    if (clubStore.userPosition['bear_name'] === '社长') {
+      items.push({
+        label: '社团解散',
+        key: 'club-disband',
+        icon: MyIcon('DeleteOutlined'),
+      });
     }
   }
   // 跳转

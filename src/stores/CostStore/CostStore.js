@@ -32,6 +32,9 @@ class CostStore {
   getCurrentCost(value) {
     return http.post('/cost/getCostToProject', toHump(value));
   }
+  reset() {
+    this.clubCostList = [];
+  }
 }
 
 export default CostStore;

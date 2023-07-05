@@ -30,6 +30,9 @@ class ActivityStageStore {
     this.activityStageList = this.activityStageList.filter((report) => report['stage_id'] !== item['stage_id']);
     return http.post('/activity/deleteActivityStage', toHump(item));
   }
+  reset() {
+    this.activityStageList = [];
+  }
 }
 
 export default ActivityStageStore;

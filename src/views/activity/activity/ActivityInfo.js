@@ -7,7 +7,7 @@ import { observer } from 'mobx-react-lite';
 import { useRootStore } from '@/stores/RootStore';
 function ActivityInfo() {
   // store
-  const { tokenStore, activityStore } = useRootStore();
+  const { tokenStore, activityStore, activityMemberStore, activityStageStore } = useRootStore();
   //   获取链接数据
   const params = useParams();
   // 获取用户职位
@@ -25,6 +25,14 @@ function ActivityInfo() {
     const activity = activityStore.currentActivity;
     setTitle(activity['activity_title']);
   }, [activityStore.currentActivity]);
+  // 清除副作用
+  useEffect(() => {
+    return () => {
+      activityStore.reset();
+      activityMemberStore.reset();
+      activityStageStore.reset();
+    };
+  }, []);
   const items = [];
   if (tokenStore.userInfo) {
     if (JSON.stringify(activityStore.userPosition) === '{}' && tokenStore.userInfo.userId !== '000000') {
@@ -54,8 +62,7 @@ function ActivityInfo() {
     }
     if (
       activityStore.userPosition['bear_name'] === '活动负责人' ||
-      activityStore.currentActivity['activity_state'] === 2 ||
-      tokenStore.userInfo.userId === '000000'
+      activityStore.currentActivity['activity_state'] === 2
     ) {
       items.push({
         label: '活动总结',

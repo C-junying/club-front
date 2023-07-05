@@ -69,6 +69,9 @@ class ActivityProcessStore {
       this.applyActivityList = list.data.data;
     });
   }
+  reset() {
+    this.clubApplyActivity = [];
+  }
 }
 
 export default ActivityProcessStore;

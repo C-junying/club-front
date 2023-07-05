@@ -49,6 +49,9 @@ class ClubMemberStore {
       this.memberList = memberList.data.data;
     });
   }
+  reset() {
+    this.memberList = [];
+  }
 }
 
 export default ClubMemberStore;

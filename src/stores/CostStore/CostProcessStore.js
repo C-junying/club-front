@@ -51,6 +51,9 @@ class CostProcessStore {
     this.costApplyList = this.costApplyList.filter((apply) => apply['apply_id'] !== item['apply_id']);
     return http.post('/cost/deleteCostApply', toHump(item));
   }
+  reset() {
+    this.costApplyList = [];
+  }
 }
 
 export default CostProcessStore;

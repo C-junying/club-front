@@ -1,5 +1,5 @@
-import { Layout } from 'antd'
-const { Footer } = Layout
+import { Layout } from 'antd';
+const { Footer } = Layout;
 
 export default function BottomFooter() {
   return (
@@ -9,5 +9,5 @@ export default function BottomFooter() {
       }}>
       软件1911 201921122025 柴颖
     </Footer>
-  )
+  );
 }

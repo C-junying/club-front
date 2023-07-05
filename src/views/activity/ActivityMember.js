@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Modal, Table, Form, Input, message } from 'antd';
-import { http } from '@/utils/http';
 import { MyIcon } from '@/utils/MyIcon';
-import { toHump } from '@/utils/toHump';
 import { useParams } from 'react-router-dom';
 import ActivityMemberConponent from '@/components/activity/ActivityMemberConponent';
 import { observer } from 'mobx-react-lite';
@@ -182,7 +180,7 @@ function ActivityMember() {
   // 搜索
   const onSearch = (value) => {
     if (value === '') {
-      activityMemberStore.getAllMemberList(params, true);
+      activityMemberStore.getAllMemberList(params);
     } else {
       activityMemberStore.getSearch({ ...params, keywords: value });
     }

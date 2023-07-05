@@ -17,12 +17,15 @@ import ActivityProcessStore from './ActivityStore/ActivityProcessStore';
 import ActivityStore from './ActivityStore/ActivityStore';
 import ActivityMemberStore from './ActivityStore/ActivityMemberStore';
 import ActivityStageStore from './ActivityStore/ActivityStageStore';
+import IndexStore from './IndexStore/IndexStore';
 
 class RootStore {
   // 组合模块
   constructor() {
     // 个人信息
     this.tokenStore = new TokenStore();
+    // 主页
+    this.indexStore = new IndexStore();
     // 所有用户信息
     this.userStore = new UserStore();
     // 角色信息

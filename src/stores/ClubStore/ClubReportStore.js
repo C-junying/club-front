@@ -38,6 +38,9 @@ class ClubReportStore {
       this.clubReportList = clubReportList.data.data;
     });
   }
+  reset() {
+    this.clubReportList = [];
+  }
 }
 
 export default ClubReportStore;

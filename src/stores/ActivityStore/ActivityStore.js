@@ -6,6 +6,8 @@ class ActivityStore {
   activityList = [];
   // 社团活动
   clubActivityList = [];
+  // 用户的活动
+  userActivityList = [];
   // 用户在活动中的职位
   userPosition = {};
   // 当前活动
@@ -22,6 +24,17 @@ class ActivityStore {
     let activityList = await http.post('/activity/getManageActivityAll');
     runInAction(() => {
       this.activityList = activityList.data.data;
+    });
+  }
+  // 用户的活动
+  async getAllUserActivity(flag) {
+    // 如果userActivityList不为空，则不发布请求
+    if (this.userActivityList.length > 0 && !flag) {
+      return;
+    }
+    let list = await http.post('/activity/getUserActivityAll');
+    runInAction(() => {
+      this.userActivityList = list.data.data;
     });
   }
   // 获取社团活动信息
@@ -89,6 +102,11 @@ class ActivityStore {
   // 撤回活动总结
   cancleActivityReport(value) {
     return http.post('/activity/alteractivityReport', toHump(value));
+  }
+  reset() {
+    this.clubActivityList = [];
+    this.userPosition = {};
+    this.currentActivity = {};
   }
 }
 

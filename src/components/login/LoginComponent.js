@@ -1,6 +1,6 @@
 import { Form, Input, Button, message } from 'antd';
 import { MyIcon } from '@/utils/MyIcon';
-import { useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { useRootStore } from '@/stores/RootStore';
 
@@ -48,12 +48,10 @@ function LoginComponent(props) {
           maxLength={61}
         />
       </Form.Item>
-      {/* <Form.Item style={{ textAlign: 'end' }}>
-        <a className="login-form-forgot" href="#123">
-          忘记密码
-        </a>
-      </Form.Item> */}
-      <Form.Item>
+      <Form.Item className="clearfix" style={{ position: 'absolute', bottom: 45, right: 0 }}>
+        <NavLink style={{ display: 'block' }}>忘记密码</NavLink>
+      </Form.Item>
+      <Form.Item style={{ marginTop: 40 }}>
         <Button type="primary" htmlType="submit" size="large" block className="login-form-button">
           登录
         </Button>
