@@ -41,6 +41,10 @@ class UserStore {
   updatePassword(value) {
     return http.post('/users/updatePassword', toHump(value));
   }
+  // 忘记密码
+  resetPassword(value) {
+    return http.post('/users/resetPassword', toHump(value));
+  }
   // 用户查询
   async getSearch(value) {
     let userList = await http.post('/users/getSearch', { keywords: value });

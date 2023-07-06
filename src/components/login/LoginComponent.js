@@ -49,7 +49,9 @@ function LoginComponent(props) {
         />
       </Form.Item>
       <Form.Item className="clearfix" style={{ position: 'absolute', bottom: 45, right: 0 }}>
-        <NavLink style={{ display: 'block' }}>忘记密码</NavLink>
+        <NavLink to="/reset-password" style={{ display: 'block' }}>
+          忘记密码
+        </NavLink>
       </Form.Item>
       <Form.Item style={{ marginTop: 40 }}>
         <Button type="primary" htmlType="submit" size="large" block className="login-form-button">

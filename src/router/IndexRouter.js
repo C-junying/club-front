@@ -50,6 +50,7 @@ import HotActivity from '@/views/index/HotActivity';
 import HotClub from '@/views/index/HotClub';
 import IndexMyClub from '@/views/index/IndexMyClub';
 import IndexMyActivity from '@/views/index/IndexMyActivity';
+import ResetPassword from '@/views/login/ResetPassword';
 
 // const LazyLoad = (path) => { //传入在view 下的路径
 //   const Comp = React.lazy(() => import(`../view${path}`))
@@ -65,6 +66,10 @@ export default function IndexRouter() {
     {
       path: '/login',
       element: <Login />,
+    },
+    {
+      path: '/reset-password',
+      element: <ResetPassword />,
     },
     {
       path: '/register',

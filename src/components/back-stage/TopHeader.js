@@ -34,7 +34,7 @@ function TopHeader() {
       }}>
       {tokenStore.userInfo && (
         <div>
-          <div style={{ float: 'left', fontSize: '18px' }}>
+          <div style={{ float: 'left', fontSize: '20px' }}>
             <NavLink to="/" replace id="home-nav">
               首页
             </NavLink>

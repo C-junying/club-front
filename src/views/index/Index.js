@@ -53,7 +53,17 @@ function Index() {
           </ul>
           <div id="my-center">
             {!!token ? (
-              <span onClick={() => navigate('/backstage')}>个人中心</span>
+              <div>
+                <span onClick={() => navigate('/backstage')}>个人中心</span>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <span
+                  onClick={() => {
+                    localStorage.removeItem('token');
+                    navigate('/login');
+                  }}>
+                  退出
+                </span>
+              </div>
             ) : (
               <div>
                 <NavLink to="/login" replace>

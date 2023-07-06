@@ -95,9 +95,13 @@ ul {
   top: 0;
   right: 0;
   line-height: 64px;
+}
+#index-nav #my-center span,
+#index-nav #my-center a {
   cursor: pointer;
 }
-#index-nav #my-center:hover {
+#index-nav #my-center span:hover,
+#index-nav #my-center a:hover {
   font-size: 20px;
   text-shadow: 0 0 5px #f8b3aa;
 }
